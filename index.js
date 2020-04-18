@@ -1,0 +1,22 @@
+//var mysql = require('mysql');
+var express = require('express');
+var session = require('express-session');
+var bodyparser = require('body-parser');
+var path = require('path');
+
+var app = express();
+app.use(session({
+
+    secret: 'revision-secret',
+    resave: true,
+    saveUninitialized: true
+}));
+app.use(bodyparser.urlencoded({extended: true}));
+app.use(bodyparser.json());
+
+app.get('/', function(request, response){
+
+    response.sendFile(path.join(__dirname + '/index.html'));
+});
+
+app.listen(8080);

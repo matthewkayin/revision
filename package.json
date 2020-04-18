@@ -1,0 +1,24 @@
+{
+  "name": "revision",
+  "version": "1.0.0",
+  "description": "A place for writers to share and improve their work.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matthewkayin/revision.git"
+  },
+  "author": "madi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/matthewkayin/revision/issues"
+  },
+  "homepage": "https://github.com/matthewkayin/revision#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "mysql": "^2.18.1"
+  }
+}
