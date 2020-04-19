@@ -18,5 +18,9 @@ app.get('/', function(request, response){
 
     response.sendFile(path.join(__dirname + '/index.html'));
 });
+app.get('/about', function(request, response){
+
+    response.sendFile(path.join(__dirname + '/about.html'));
+});
 
 app.listen(8080);
