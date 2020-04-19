@@ -67,7 +67,7 @@
             margin-top: 4vh;
         }
         .login-form input[type="password"],
-        .login-form input[type="text"]{
+        .login-form input[type="email"]{
 
             font-size: 4vw;
             font-family: Merriweather Sans, sans-serif;
@@ -107,7 +107,7 @@
                 font-size: 1.5vw;
             }
             .login-form input[type="password"],
-            .login-form input[type="text"]{
+            .login-form input[type="email"]{
 
                 font-size: 2vw;
                 padding: 1vw 1.5vw;
@@ -128,11 +128,11 @@
     <body>
         <div class="landing">
             <div class="title-box">
-                <h2 class="subtitle">Hello! Login to</h2>
+                <h2 class="subtitle">Login to</h2>
                 <h1 class="title">Revision.</h1>
             </div>
             <form class="login-form" action="auth" method="POST">
-                <input type="text" name="username" placeholder="Username" required>
+                <input type="email" name="email" placeholder="Email" required>
                 <input type="password" name="password" placeholder="Password" required>
                 <input type="submit" value="Login">
             </form>

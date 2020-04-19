@@ -26,5 +26,9 @@ app.get('/login', function(request, response){
 
     response.sendFile(path.join(__dirname + '/login.html'));
 });
+app.get('/signup', function(request, response){
+
+    response.sendFile(path.join(__dirname + '/signup.html'));
+});
 
 app.listen(8080);

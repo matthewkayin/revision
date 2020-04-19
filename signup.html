@@ -58,36 +58,46 @@
 
             color: #333;
         }
-        .button{
+        .login-form{
 
-            font-family: Merriweather, serif;
-            font-size: 7vw;
-            width: 60vw;
-            border: 2px solid;
             display: block;
+            width: 60vw;
             margin-left: auto;
             margin-right: auto;
+            margin-top: 4vh;
+            margin-bottom: 10vh;
+        }
+        .login-form input[type="password"],
+        .login-form input[type="email"],
+        .login-form input[type="text"]{
+
+            font-size: 4vw;
+            font-family: Merriweather Sans, sans-serif;
+            width: 100%;
+            padding: 4vw;
+            border: 1px solid #171717;
             margin-top: 3vh;
-            padding: 1.5vw 0vw;
+            box-sizing: border-box;
         }
-        .button.dark{
+        .login-form input[type="submit"]{
 
+            font-size: 4vw;
+            font-family: Merriweather, serif;
+            font-weight: bold;
+            width: 100%;
+            padding: 4vw;
             background-color: #171717;
-            color: #ffffff;
-        }
-        .button:hover{
-
+            border: 0;
+            margin-top: 3vh;
+            box-sizing: border-box;
             cursor: pointer;
+            color: #ffffff;
         }
         @media screen and (min-width: 1024px){
 
             .title-box{
 
                 padding-top: 6vh;
-            }
-            .desc-box{
-
-                width: 40vw;
             }
             .title{
 
@@ -98,10 +108,21 @@
 
                 font-size: 1.5vw;
             }
-            .button{
+            .login-form input[type="password"],
+            .login-form input[type="email"],
+            .login-form input[type="text"]{
+
+                font-size: 2vw;
+                padding: 1vw 1.5vw;
+            }
+            .login-form input[type="submit"]{
+
+                font-size: 2vw;
+                padding: 1vw 1.5vw;
+            }
+            .login-form{
 
                 width: 30vw;
-                font-size: 2vw;
             }
         }
         </style>
@@ -110,14 +131,15 @@
     <body>
         <div class="landing">
             <div class="title-box">
-                <h2 class="subtitle">Hello! Welcome to</h2>
+                <h2 class="subtitle">Sign up for</h2>
                 <h1 class="title">Revision.</h1>
             </div>
-            <div class="desc-box">
-                <h2 class="subtitle">Revision is a place for writers to share and improve their work. <a href="about">Learn more &#187;</a></h2>
-            </div>
-            <span class="button" onclick="location.href='login';">Login</span>
-            <span class="button dark" onclick="location.href='signup';">Sign Up</span>
+            <form class="login-form" action="auth" method="POST">
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <input type="submit" value="Login">
+            </form>
         </div>
     </body>
 </html>
