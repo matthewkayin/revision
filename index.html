@@ -10,25 +10,33 @@
             background: #fff;
             margin: 0;
         }
-        .landing{
+        .landing-wrapper{
 
             width: 100vw;
             height: 100vh;
+            position: relative;
+        }
+        .landing{
+
             text-align: center;
+            position: absolute;
+            width: 300px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -205px);
         }
         .title-box{
 
             display: inline-block;
             text-align: left;
-            padding-top: 15vh;
         }
         .desc-box{
 
             display: block;
-            width: 75vw;
+            width: 282px;
             margin: 0 auto;
-            padding-top: 2vh;
-            padding-bottom: 7vh;
+            padding-top: 8px;
+            padding-bottom: 26px;
             overflow: wrap;
             text-align: left;
         }
@@ -40,13 +48,13 @@
         .title{
 
             font-family: Merriweather, serif;
-            font-size: 14vw;
-            margin-top: -2vw;
+            font-size: 53px;
+            margin-top: -10px;
         }
         .subtitle{
 
             font-family: Merriweather Sans, sans-serif;
-            font-size: 4vw;
+            font-size: 15px;
         }
         a{
 
@@ -61,14 +69,14 @@
         .button{
 
             font-family: Merriweather, serif;
-            font-size: 7vw;
-            width: 60vw;
+            font-size: 26px;
+            width: 225px;
             border: 2px solid;
             display: block;
             margin-left: auto;
             margin-right: auto;
-            margin-top: 3vh;
-            padding: 1.5vw 0vw;
+            margin-top: 12px;
+            padding: 6px 0px;
         }
         .button.dark{
 
@@ -79,45 +87,22 @@
 
             cursor: pointer;
         }
-        @media screen and (min-width: 1024px){
-
-            .title-box{
-
-                padding-top: 6vh;
-            }
-            .desc-box{
-
-                width: 40vw;
-            }
-            .title{
-
-                font-size: 6vw;
-                margin-top: -1.4vw;
-            }
-            .subtitle{
-
-                font-size: 1.5vw;
-            }
-            .button{
-
-                width: 30vw;
-                font-size: 2vw;
-            }
-        }
         </style>
         <title>Revision</title>
     </head>
     <body>
-        <div class="landing">
-            <div class="title-box">
-                <h2 class="subtitle">Hello! Welcome to</h2>
-                <h1 class="title">Revision.</h1>
+        <div class="landing-wrapper">
+            <div class="landing">
+                <div class="title-box">
+                    <h2 class="subtitle">Hello! Welcome to</h2>
+                    <h1 class="title">Revision.</h1>
+                </div>
+                <div class="desc-box">
+                    <h2 class="subtitle">Revision is a place for writers to share and improve their work. <a href="about">Learn more &#187;</a></h2>
+                </div>
+                <span class="button" onclick="location.href='login';">Login</span>
+                <span class="button dark" onclick="location.href='signup';">Sign Up</span>
             </div>
-            <div class="desc-box">
-                <h2 class="subtitle">Revision is a place for writers to share and improve their work. <a href="about">Learn more &#187;</a></h2>
-            </div>
-            <span class="button" onclick="location.href='login';">Login</span>
-            <span class="button dark" onclick="location.href='signup';">Sign Up</span>
         </div>
     </body>
 </html>
