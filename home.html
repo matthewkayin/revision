@@ -12,14 +12,21 @@
             margin: 0;
             min-height: 100vh;
         }
-        .center-column{
+        .center-all{
 
             width: auto;
-            height: 100vh; 
-            overflow: scroll;
             margin: 0 auto;
-            position: fixed;
+            display: inline-block;
+        }
+        .content{
+
+            width: auto;
+            min-height: 100vh; 
+            overflow: hidden;
+            /*margin: 0 auto;*/
             text-align: center;
+            position: relative;
+            border-left: 1px solid #f0f0f0;
         }
         .header{
 
@@ -31,8 +38,11 @@
             position: fixed;
             height: 52px;
             border-bottom: 1px solid #f0f0f0;
+            border-left: 1px solid #f0f0f0;
+            border-right: 1px solid #f0f0f0;
             text-align: left;
             overflow: hidden;
+            z-index: 2;
         }
         .header-section{
 
@@ -168,82 +178,161 @@
             left: 50%;
             transform: translate(-50%, -50%);
         }
+        .sidebar{
+
+            width: 0;
+            background: #fff;
+            text-align: center;
+            overflow: hidden;
+            position: fixed;
+            margin-left: auto;
+            display: inline;
+            /*left: 50%;
+            transform: translateX(-372px);*/
+            padding-right: 10px;
+            padding-left: 10px;
+        }
+        .sidebar-button{
+
+            position: relative;
+            display: block;
+            width: auto;
+            height: 52px;
+            padding: 0;
+            margin-top: 0px;
+            margin-bottom: 15px;
+        }
+        .sidebar-button-text{
+
+            font-family: Merriweather, serif;
+        }
+        .sidebar-button-icon{
+
+            font-family: IcoFont;
+        }
+        .sidebar-button-icon,
+        .sidebar-button-text{
+
+            font-weight: 300;
+            font-size: 30px;
+            margin: 0;
+            padding: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .sidebar-button-title{
+
+            width: 0;
+            font-family: Merriweather, serif;
+            font-weight: 300;
+            font-size: 30px;
+            margin: 0;
+            padding: 0;
+        }
         @media screen and (min-width: 768px){
 
-            .center-column{
+            .content{
 
-                max-width: 600px;
+                width: 600px;
                 left: 50%;
-                transform: translateX(-50%);
+                transform: translateX(-264px);
             }
+            .header{
+
+                width: 600px;
+                left: 50%;
+                transform: translateX(-264px);
+            }
+            .navbar{
+
+                height: 0;
+            }
+            .sidebar{
+
+                width: 52px;
+                left: 50%;
+                transform: translateX(-336px);
+            }
+        }
+        @media screen and (min-width: 1024px){
+
         }
         </style>
         <title>Revision</title>
     </head>
     <body>
-        <div class="center-column" id="center-column">
-            <div class="header" id="header">
-                <div class="header-section first">
-                    <h1 class="title">Revision.</h1>
-                </div>
-                <div class="header-section last">
-                    <h1 class="theme-icon">&#xeea2;</i>
-                </div>
+        <div class="sidebar">
+            <div class="sidebar-button"><h1 class="sidebar-button-text">R</h1>
+            </div><div class="sidebar-button"><h1 class="sidebar-button-icon">&#xebf5;</h1>
+            </div><div class="sidebar-button"><h1 class="sidebar-button-icon">&#xead2;</h1>
+            </div><div class="sidebar-button"><h1 class="sidebar-button-icon">&#xed1b;</h1>
+            </div><div class="sidebar-button"><h1 class="sidebar-button-icon">&#xec8e;</h1></div>
+        </div>
+        <div class="header" id="header">
+            <div class="header-section first">
+                <h1 class="title">Revision.</h1>
             </div>
-            <div class="post">
-                <h1 class="post-title">TITLE</h1>
-                <h2 class="post-author">AUTHOR</h2>
-                <p class="post-content">CONTENT</p>
-                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
-            </div>
-            <div class="post">
-                <h1 class="post-title">TITLE</h1>
-                <h2 class="post-author">AUTHOR</h2>
-                <p class="post-content">CONTENT</p>
-                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
-            </div>
-            <div class="post">
-                <h1 class="post-title">TITLE</h1>
-                <h2 class="post-author">AUTHOR</h2>
-                <p class="post-content">CONTENT</p>
-                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
-            </div>
-            <div class="post">
-                <h1 class="post-title">TITLE</h1>
-                <h2 class="post-author">AUTHOR</h2>
-                <p class="post-content">CONTENT</p>
-                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
-            </div>
-            <div class="post">
-                <h1 class="post-title">TITLE</h1>
-                <h2 class="post-author">AUTHOR</h2>
-                <p class="post-content">CONTENT</p>
-                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
-            </div>
-            <div class="post">
-                <h1 class="post-title">TITLE</h1>
-                <h2 class="post-author">AUTHOR</h2>
-                <p class="post-content">CONTENT</p>
-                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
-            </div>
-            <div class="post">
-                <h1 class="post-title">TITLE</h1>
-                <h2 class="post-author">AUTHOR</h2>
-                <p class="post-content">CONTENT</p>
-                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
-            </div>
-            <div class="navbar">
-                <div class="navbar-button"><h1 class="navbar-button-icon">&#xebf5;</h1>
-                </div><div class="navbar-button"><h1 class="navbar-button-icon">&#xead2;</h1>
-                </div><div class="navbar-button"><h1 class="navbar-button-icon">&#xed1b;</h1>
-                </div><div class="navbar-button"><h1 class="navbar-button-icon">&#xec8e;</h1></div>
+            <div class="header-section last">
+                <h1 class="theme-icon">&#xeea2;</i>
             </div>
         </div>
+        <div class="content" id="content">
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+        </div> <!--/content-->
+        <div class="navbar">
+            <div class="navbar-button"><h1 class="navbar-button-icon">&#xebf5;</h1>
+            </div><div class="navbar-button"><h1 class="navbar-button-icon">&#xead2;</h1>
+            </div><div class="navbar-button"><h1 class="navbar-button-icon">&#xed1b;</h1>
+            </div><div class="navbar-button"><h1 class="navbar-button-icon">&#xec8e;</h1></div>
+        </div>
         <script>
-        var scroll_pos = document.getElementById("center-column").scrollTop;
-        document.getElementById("center-column").onscroll = function(){
+        var scroll_pos = window.scrollY;
+        window.onscroll = function(){
 
-            var current_scroll_pos = document.getElementById("center-column").scrollTop;
+            var current_scroll_pos = window.scrollY;
             if(current_scroll_pos == 0){
 
                 document.getElementById("header").style.top = "0px";
