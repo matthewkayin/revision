@@ -133,11 +133,48 @@
 
             background-color: #fff;
         }
+        .navbar{
+
+            background: #fff;
+            position: fixed;
+            margin: 0;
+            padding: 0;
+            bottom: 0px;
+            width: 100%;
+            height: 60px;
+            border-top: 1px solid #f0f0f0;
+            text-align: left;
+        }
+        .navbar-button{
+
+            background: #fff;
+            position: relative;
+            display: inline-block;
+            width: 25%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            /*line-height: 40px;*/
+            text-align: center;
+        }
+        .navbar-button-icon{
+
+            font-family: IcoFont;
+            font-weight: 300;
+            font-size: 30px;
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
         @media screen and (min-width: 768px){
 
             .center-column{
 
                 max-width: 600px;
+                left: 50%;
+                transform: translateX(-50%);
             }
         }
         </style>
@@ -194,6 +231,12 @@
                 <h2 class="post-author">AUTHOR</h2>
                 <p class="post-content">CONTENT</p>
                 <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+            <div class="navbar">
+                <div class="navbar-button"><h1 class="navbar-button-icon">&#xebf5;</h1>
+                </div><div class="navbar-button"><h1 class="navbar-button-icon">&#xead2;</h1>
+                </div><div class="navbar-button"><h1 class="navbar-button-icon">&#xed1b;</h1>
+                </div><div class="navbar-button"><h1 class="navbar-button-icon">&#xec8e;</h1></div>
             </div>
         </div>
         <script>
