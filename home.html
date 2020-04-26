@@ -3,7 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans:ital,wght@0,300;0,700;1,300&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather+Sans:ital,wght@0,300;0,700;1,300&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap"> 
+        <link rel="stylesheet" href="res/icofont/icofont.min.css">
         <style>
         body{
 
@@ -11,54 +12,214 @@
             margin: 0;
             min-height: 100vh;
         }
+        .center-column{
+
+            width: auto;
+            height: 100vh; 
+            overflow: scroll;
+            margin: 0 auto;
+            position: fixed;
+            text-align: center;
+        }
         .header{
 
             background: #fff;
-            width: 100vw;
+            width: 100%;
             margin: 0;
             padding: 0;
-            height: auto;
-            display: flex;
-            justify-content: space-between;
+            top: 0px;
+            position: fixed;
+            height: 52px;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: left;
+            overflow: hidden;
         }
         .header-section{
 
             position: relative;
             display: inline-block;
-            line-height: 5.5vw;
+            line-height: 22px;
         }
         .first{
 
-            left: 5vw;
+            left: 20px;
         }
         .last{
 
-            right: 5vw;
-            align-self: flex-end;
+            right: 20px;
+            float: right;
         }
         .title{
 
             font-family: Merriweather, serif;
             font-weight: 300;
-            font-size: 5.5vw;
+            font-size: 22px;
         }
-        .username{
+        .theme-icon{
+
+            font-family: IcoFont;
+            font-weight: 300;
+            font-size: 26px;
+            margin: 13px 0px;
+        }
+        .post{
+
+            display: inline-block;
+            background: #fff;
+            width: 80vw;
+            margin-top: 100px;
+            padding-bottom: 2vh;
+            text-align: left;
+        }
+        .post-title{
+
+            font-family: Merriweather, serif;
+            font-weight: 300;
+            font-size: 5vw;
+            margin: 0;
+            padding-top: 1.5vh;
+            padding-left: 4vw;
+            padding-right: 4vw;
+        }
+        .post-author{
 
             font-family: Merriweather Sans, sans-serif;
             font-weight: 300;
-            font-size: 4vw;
+            font-size: 3vw;
+            margin: 0;
+            padding-left: 4vw;
+            padding-right: 4vw;
+        }
+        .post-content{
+
+            font-family: Merriweather Sans, sans-serif;
+            font-weight: 300;
+            font-size: 3.5vw;
+            margin: 0;
+            padding-top: 1.5vh;
+            padding-left: 4vw;
+            padding-right: 4vw;
+            line-height: 1.7;
+            max-height: 30vh;
+            overflow: hidden;
+        }
+        .heart{
+
+            width: 5vw;
+            height: 5vw; 
+            vertical-align: middle;
+        }
+        .new-post-container{
+
+            display: block;
+            padding-top: 1.5vh;
+            padding-left: 4vw;
+            padding-right: 4vw;
+            width: auto;
+        }
+        .new-post-container input[type="text"]{
+
+            font-family: Merriweather Sans, sans-serif;
+            font-weight: 300;
+            font-size: 3.5vw;
+            padding: 3.5vw;
+            box-sizing: border-box;
+            width: 100%;
+            background-color: #f0f0f0;
+            color: #a0a0a0;
+            border: 5px solid #f0f0f0;
+        }
+        .new-post-container input[type="text"]:hover{
+
+            background-color: #fff;
+        }
+        @media screen and (min-width: 768px){
+
+            .center-column{
+
+                max-width: 600px;
+            }
         }
         </style>
         <title>Revision</title>
     </head>
     <body>
-        <div class="header">
-            <div class="header-section first">
-                <h1 class="title">Revision.</h1>
+        <div class="center-column" id="center-column">
+            <div class="header" id="header">
+                <div class="header-section first">
+                    <h1 class="title">Revision.</h1>
+                </div>
+                <div class="header-section last">
+                    <h1 class="theme-icon">&#xeea2;</i>
+                </div>
             </div>
-            <div class="header-section last">
-                <h2 class="username">USERNAME</h2>
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
+            </div>
+            <div class="post">
+                <h1 class="post-title">TITLE</h1>
+                <h2 class="post-author">AUTHOR</h2>
+                <p class="post-content">CONTENT</p>
+                <p class="post-content"><img class="heart" src="res/heart_empty.png"/> 25</p>
             </div>
         </div>
+        <script>
+        var scroll_pos = document.getElementById("center-column").scrollTop;
+        document.getElementById("center-column").onscroll = function(){
+
+            var current_scroll_pos = document.getElementById("center-column").scrollTop;
+            if(current_scroll_pos == 0){
+
+                document.getElementById("header").style.top = "0px";
+
+            }else{
+
+                var current_top = document.getElementById("header").getBoundingClientRect().y;
+                var scroll_offset = current_scroll_pos - scroll_pos;
+                if(scroll_offset > 0 && current_top > -52){
+
+                    document.getElementById("header").style.top = String(Math.max(-52, current_top - scroll_offset)) + "px";
+
+                }else if(scroll_offset < 0 && current_top < 0){
+
+                    document.getElementById("header").style.top = String(Math.min(0, current_top - scroll_offset)) + "px";
+                }
+                scroll_pos = current_scroll_pos;
+            }
+        };
+        </script>
     </body>
 </html>
