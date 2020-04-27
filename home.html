@@ -8,7 +8,7 @@
         <style>
         body{
 
-            background: #f0f0f0;
+            background: #fff;
             margin: 0;
             min-height: 100vh;
         }
@@ -27,6 +27,7 @@
             text-align: center;
             position: relative;
             border-left: 1px solid #f0f0f0;
+            border-right: 1px solid #f0f0f0;
         }
         .header{
 
@@ -50,11 +51,11 @@
             display: inline-block;
             line-height: 22px;
         }
-        .first{
+        .header-section.first{
 
             left: 20px;
         }
-        .last{
+        .header-section.last{
 
             right: 20px;
             float: right;
@@ -72,76 +73,56 @@
             font-size: 26px;
             margin: 13px 0px;
         }
+        .post.first{
+
+            margin-top: 62px;
+        }
         .post{
 
             display: inline-block;
             background: #fff;
-            width: 80vw;
-            margin-top: 100px;
-            padding-bottom: 2vh;
+            width: 100%;
+            margin-top: 2px;
+            padding-bottom: 15px;
             text-align: left;
         }
         .post-title{
 
             font-family: Merriweather, serif;
             font-weight: 300;
-            font-size: 5vw;
+            font-size: 16px;
             margin: 0;
-            padding-top: 1.5vh;
-            padding-left: 4vw;
-            padding-right: 4vw;
+            padding-top: 10px;
+            padding-left: 15px;
+            padding-right: 15px;
         }
         .post-author{
 
             font-family: Merriweather Sans, sans-serif;
             font-weight: 300;
-            font-size: 3vw;
+            font-size: 12px;
             margin: 0;
-            padding-left: 4vw;
-            padding-right: 4vw;
+            padding-left: 15px;
+            padding-right: 15px;
         }
         .post-content{
 
             font-family: Merriweather Sans, sans-serif;
             font-weight: 300;
-            font-size: 3.5vw;
+            font-size: 14px;
             margin: 0;
-            padding-top: 1.5vh;
-            padding-left: 4vw;
-            padding-right: 4vw;
+            padding-top: 10px;
+            padding-left: 15px;
+            padding-right: 15px;
             line-height: 1.7;
-            max-height: 30vh;
+            max-height: 200px;
             overflow: hidden;
         }
         .heart{
 
-            width: 5vw;
-            height: 5vw; 
+            width: 19px;
+            height: 19px; 
             vertical-align: middle;
-        }
-        .new-post-container{
-
-            display: block;
-            padding-top: 1.5vh;
-            padding-left: 4vw;
-            padding-right: 4vw;
-            width: auto;
-        }
-        .new-post-container input[type="text"]{
-
-            font-family: Merriweather Sans, sans-serif;
-            font-weight: 300;
-            font-size: 3.5vw;
-            padding: 3.5vw;
-            box-sizing: border-box;
-            width: 100%;
-            background-color: #f0f0f0;
-            color: #a0a0a0;
-            border: 5px solid #f0f0f0;
-        }
-        .new-post-container input[type="text"]:hover{
-
-            background-color: #fff;
         }
         .navbar{
 
@@ -181,34 +162,21 @@
         .sidebar{
 
             width: 0;
+            height: 100vh;
             background: #fff;
             text-align: center;
             overflow: hidden;
             position: fixed;
-            margin-left: auto;
-            display: inline;
-            /*left: 50%;
-            transform: translateX(-372px);*/
-            padding-right: 10px;
-            padding-left: 10px;
-        }
-        .sidebar-button{
-
-            position: relative;
             display: block;
-            width: auto;
-            height: 52px;
             padding: 0;
-            margin-top: 0px;
-            margin-bottom: 15px;
-        }
-        .sidebar-button-text{
-
-            font-family: Merriweather, serif;
         }
         .sidebar-button-icon{
 
             font-family: IcoFont;
+        }
+        .sidebar-button-text{
+
+            font-family: Merriweather, serif;
         }
         .sidebar-button-icon,
         .sidebar-button-text{
@@ -216,30 +184,19 @@
             font-weight: 300;
             font-size: 30px;
             margin: 0;
-            padding: 0;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            padding: 11px 21px;
+            display: block;
+            position: relative;
         }
         .sidebar-button-title{
 
-            width: 0;
+            display: none;
             font-family: Merriweather, serif;
-            font-weight: 300;
-            font-size: 30px;
-            margin: 0;
-            padding: 0;
         }
         @media screen and (min-width: 768px){
 
+            .header,
             .content{
-
-                width: 600px;
-                left: 50%;
-                transform: translateX(-264px);
-            }
-            .header{
 
                 width: 600px;
                 left: 50%;
@@ -251,24 +208,43 @@
             }
             .sidebar{
 
-                width: 52px;
+                width: auto;
                 left: 50%;
                 transform: translateX(-336px);
             }
         }
         @media screen and (min-width: 1024px){
 
+            .header,
+            .content{
+
+                transform: translateX(-174px);
+            }
+            .sidebar{
+
+                transform: translateX(-426px);
+                text-align: left;
+            }
+            .sidebar-button-text,
+            .sidebar-button-icon{
+
+                padding: 11px 42px;
+            }
+            .sidebar-button-title{
+
+                display: inline-block;
+            }
         }
         </style>
         <title>Revision</title>
     </head>
     <body>
         <div class="sidebar">
-            <div class="sidebar-button"><h1 class="sidebar-button-text">R</h1>
-            </div><div class="sidebar-button"><h1 class="sidebar-button-icon">&#xebf5;</h1>
-            </div><div class="sidebar-button"><h1 class="sidebar-button-icon">&#xead2;</h1>
-            </div><div class="sidebar-button"><h1 class="sidebar-button-icon">&#xed1b;</h1>
-            </div><div class="sidebar-button"><h1 class="sidebar-button-icon">&#xec8e;</h1></div>
+            <h1 class="sidebar-button-text">R<div class="sidebar-button-title">evision.</div></h1>
+            <h1 class="sidebar-button-icon">&#xebf5; <div class="sidebar-button-title">Write</div></h1>
+            <h1 class="sidebar-button-icon">&#xead2; <div class="sidebar-button-title">Read</div></h1>
+            <h1 class="sidebar-button-icon">&#xed1b; <div class="sidebar-button-title">Discover</div></h1>
+            <h1 class="sidebar-button-icon">&#xec8e; <div class="sidebar-button-title">Profile</div></h1></div>
         </div>
         <div class="header" id="header">
             <div class="header-section first">
@@ -279,7 +255,7 @@
             </div>
         </div>
         <div class="content" id="content">
-            <div class="post">
+            <div class="post first">
                 <h1 class="post-title">TITLE</h1>
                 <h2 class="post-author">AUTHOR</h2>
                 <p class="post-content">CONTENT</p>
