@@ -17,6 +17,7 @@ sqlserver.connect(function(error){
 
     if(error){
 
+        console.log("Failed to connect to mysql server.");
         throw error;
     }
     console.log("Connected to mysql server.");
@@ -32,6 +33,10 @@ app.use(session({
 app.use(bodyparser.urlencoded({extended: true}));
 app.use(bodyparser.json());
 
+app.get('/index.css', function(request, response){
+
+    response.sendFile(path.join(__dirname + "/index.css"));
+});
 app.get('/', function(request, response){
 
     response.sendFile(path.join(__dirname + '/index.html'));
@@ -79,6 +84,22 @@ app.post('/auth', function(request, response){
     });
 });
 
+app.get('/home.css', function(request, response){
+
+    response.sendFile(path.join(__dirname + "/home.css"));
+});
+app.get('/res/icofont/icofont.min.css', function(request, response){
+
+    response.sendFile(path.join(__dirname + "/res/icofont/icofont.min.css"));
+});
+app.get('/res/icofont/fonts/icofont.woff2', function(request, response){
+
+    response.sendFile(path.join(__dirname + "/res/icofont/fonts/icofont.woff2"));
+});
+app.get('/home.js', function(request, response){
+
+    response.sendFile(path.join(__dirname + "/home.js"));
+});
 app.get('/home', function(request, response){
 
     if(!request.session.loggedin){

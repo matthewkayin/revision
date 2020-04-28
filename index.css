@@ -1,0 +1,135 @@
+body{
+
+    background: #fff;
+    margin: 0;
+}
+.landing-wrapper{
+
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+}
+.landing{
+
+    text-align: center;
+    position: absolute;
+    width: 300px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -205px);
+}
+.content{
+
+    text-align: left;
+    position: absolute;
+    width: 300px;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.content .title{
+
+    font-size: 32px;
+    padding-bottom: 15px;
+}
+.content .subtitle{
+
+    line-height: 1.7;
+    padding-bottom: 30px;
+}
+.title-box{
+
+    display: inline-block;
+    text-align: left;
+}
+.desc-box{
+
+    display: block;
+    width: 282px;
+    margin: 0 auto;
+    padding-top: 8px;
+    padding-bottom: 26px;
+    overflow: wrap;
+    text-align: left;
+}
+.subtitle, .title{
+
+    font-weight: 300;
+    margin: 0;
+}
+.title{
+
+    font-family: Merriweather, serif;
+    font-size: 53px;
+    margin-top: -10px;
+}
+.subtitle{
+
+    font-family: Merriweather Sans, sans-serif;
+    font-size: 15px;
+}
+a{
+
+    color: #7f7f7f;
+    text-decoration: none;
+    transition-duration: 0.3s;
+}
+a:hover, a:visited, a:active{
+
+    color: #333;
+}
+.button{
+
+    font-family: Merriweather, serif;
+    font-size: 26px;
+    width: 225px;
+    border: 2px solid;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 12px;
+    padding: 6px 0px;
+}
+.button.dark{
+
+    background-color: #171717;
+    color: #ffffff;
+}
+.button:hover{
+
+    cursor: pointer;
+}
+.login-form{
+
+    display: block;
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 22px;
+}
+.login-form input[type="password"],
+.login-form input[type="email"],
+.login-form input[type="text"]{
+
+    font-size: 15px;
+    font-family: Merriweather Sans, sans-serif;
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #171717;
+    margin-top: 10px;
+    box-sizing: border-box;
+}
+.login-form input[type="submit"]{
+
+    font-size: 15px;
+    font-family: Merriweather, serif;
+    font-weight: bold;
+    width: 100%;
+    padding: 15px;
+    background-color: #171717;
+    border: 0;
+    margin-top: 10px;
+    box-sizing: border-box;
+    cursor: pointer;
+    color: #ffffff;
+}
