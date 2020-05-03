@@ -1,3 +1,10 @@
+@font-face{
+
+    font-family: 'fontello';
+    src: url('res/fontello/font/fontello.woff2');
+    font-weight: normal;
+    font-style: normal;
+}
 .theme-light{
 
     --bg-color: #fff;
@@ -25,6 +32,7 @@
 }
 body{
 
+    z-index: 0;
     background: var(--bg-color);
     margin: 0;
     min-height: 100vh;
@@ -84,7 +92,7 @@ body{
 }
 .theme-icon{
 
-    font-family: IcoFont;
+    font-family: fontello;
     font-weight: 300;
     font-size: 26px;
     margin: 13px 0px;
@@ -105,16 +113,22 @@ body{
     background: var(--bg-color);
     width: 100%;
     margin-top: 2px;
-    padding-bottom: 15px;
     text-align: left;
+}
+.post-title,
+.post-author,
+.post-content,
+.post-info{
+
+    color: var(--fg-color);
 }
 .post-title{
 
     font-family: Merriweather, serif;
     font-weight: 300;
-    font-size: 16px;
+    font-size: 20px;
     margin: 0;
-    padding-top: 10px;
+    padding-top: 5px;
     padding-left: 15px;
     padding-right: 15px;
 }
@@ -122,8 +136,9 @@ body{
 
     font-family: Merriweather Sans, sans-serif;
     font-weight: 300;
-    font-size: 12px;
+    font-size: 14px;
     margin: 0;
+    padding-top: 5px;
     padding-left: 15px;
     padding-right: 15px;
 }
@@ -140,18 +155,39 @@ body{
     max-height: 200px;
     overflow: hidden;
 }
-.post-title,
-.post-author,
-.post-content{
+.post-info{
 
-    color: var(--fg-color);
+    margin: 0;
+    width: 100%;
+    display: inline-block;
+    padding: 7px 0px;
+    border-top: 1px solid var(--accent-color);
+    border-bottom: 2px solid var(--accent-color);
 }
-.heart{
+.post-heart-container{
 
-    width: 19px;
-    height: 19px; 
+    position: relative;
+    float: left;
+    left: 15px;
+    font-size: 20px;
+    vertical-align: middle;
+}
+.post-heart{
+
+    font-family: fontello;
+    font-size: 25px;
     vertical-align: middle;
     color: var(--fg-color);
+}
+.post-tags{
+
+    font-family: Merriweather Sans, sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 25px;
+    position: relative;
+    float: right;
+    right: 15px;
 }
 .navbar{
 
@@ -164,6 +200,7 @@ body{
     height: 60px;
     border-top: 1px solid var(--accent-color);
     text-align: left;
+    z-index: 3;
 }
 .navbar-button{
 
@@ -185,7 +222,7 @@ body{
 }
 .navbar-button-icon{
 
-    font-family: IcoFont;
+    font-family: fontello;
     font-weight: 300;
     font-size: 30px;
     margin: 0;
@@ -193,6 +230,12 @@ body{
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+#navbar-padding{
+
+    height: 55px;
+    width: 100%;
+    display: block;
 }
 .sidebar{
 
@@ -207,7 +250,7 @@ body{
 }
 .sidebar-button-icon{
 
-    font-family: IcoFont;
+    font-family: fontello;
     cursor: pointer;
 }
 .sidebar-button-text{
@@ -245,6 +288,10 @@ body{
         transform: translateX(-264px);
     }
     .navbar{
+
+        height: 0;
+    }
+    #navbar-padding{
 
         height: 0;
     }

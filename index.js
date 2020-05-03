@@ -88,13 +88,9 @@ app.get('/home.css', function(request, response){
 
     response.sendFile(path.join(__dirname + "/home.css"));
 });
-app.get('/res/icofont/icofont.min.css', function(request, response){
+app.get('/res/fontello/font/fontello.woff2', function(request, response){
 
-    response.sendFile(path.join(__dirname + "/res/icofont/icofont.min.css"));
-});
-app.get('/res/icofont/fonts/icofont.woff2', function(request, response){
-
-    response.sendFile(path.join(__dirname + "/res/icofont/fonts/icofont.woff2"));
+    response.sendFile(path.join(__dirname + "/res/fontello/font/fontello.woff2"));
 });
 app.get('/home.js', function(request, response){
 
