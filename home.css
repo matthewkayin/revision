@@ -154,6 +154,9 @@ body{
     line-height: 1.7;
     max-height: 200px;
     overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 8;
+    -webkit-box-orient: vertical;
 }
 .post-info{
 
