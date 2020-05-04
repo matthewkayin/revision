@@ -58,11 +58,19 @@ app.post('/signup', function(request, response){
 
     sqlserver.query("INSERT INTO users (email, username, password) VALUES (?, ?, ?)", [request.body.email, request.body.username, request.body.password], function(error, result){
 
-        //response.send("Congradulations, " + request.body.username + ", you have created an account!");
-        //response.end();
-        request.session.loggedin = true;
-        request.session.username = request.body.username;
-        response.redirect('/home');
+    });
+    sqlserver.query("SELECT * FROM users WHERE users.email = ? AND users.password = ?", [request.body.email, request.body.password], function(error, results){
+
+        if(results.length > 0){
+
+            request.session.loggedin = true;
+            request.session.userid = results[0].userid;
+            response.redirect('/home');
+
+        }else{
+
+            response.send("Signup failed!");
+        }
     });
 });
 
@@ -73,9 +81,8 @@ app.post('/auth', function(request, response){
         if(results.length > 0){
 
             request.session.loggedin = true;
-            request.session.username = results[0].username;
+            request.session.userid = results[0].userid;
             response.redirect('/home');
-            //response.send("Login successful, " + results[0].username + "!");
 
         }else{
 
@@ -105,9 +112,64 @@ app.get('/home', function(request, response){
     }else{
 
         var template = fs.readFileSync('home.html');
-        var output = template.toString().replace(/USERNAME/gi, request.session.username);
+        var content = fs.readFileSync('new_button.html');
+        var post_template = fs.readFileSync('post_template.html');
+        var output = template.toString().replace(/PAGETITLE/gi, "Write");
+        var post_content = content.toString();
+        sqlserver.query("SELECT title, content, username FROM posts, users WHERE users.userid = ? AND users.userid = posts.userid", [request.session.userid], function(error, results){
+
+            if(error){
+
+                throw error;
+            }
+            for(var i = 0; i < results.length; i++){
+
+                var new_post = post_template.toString().replace(/IS_FIRST/gi, "");
+                new_post = new_post.toString().replace(/POSTTITLE/gi, results[i].title);
+                new_post = new_post.toString().replace(/POSTAUTHOR/gi, results[i].username);
+                new_post = new_post.toString().replace(/POSTCONTENT/gi, results[i].content);
+                new_post = new_post.toString().replace(/POSTINFO/gi, "First revision.");
+                new_post = new_post.toString().replace(/LIKES/gi, "0");
+                post_content += new_post;
+            }
+            output = output.replace(/PAGECONTENT/gi, post_content);
+            response.send(output);
+            response.end();
+        });
+    }
+});
+app.get('/write', function(request, response){
+
+    if(!request.session.loggedin){
+
+        response.redirect('/');
+
+    }else{
+
+        var template = fs.readFileSync('home.html');
+        var content = fs.readFileSync('post_editor.html');
+        var output = template.toString().replace(/PAGETITLE/gi, "Write");
+        output = output.toString().replace(/PAGECONTENT/gi, content.toString());
         response.send(output);
         response.end();
+    }
+});
+app.post('/save', function(request, response){
+
+    if(!request.session.loggedin){
+
+        response.redirect('/');
+
+    }else{
+
+        sqlserver.query("INSERT INTO posts (userid, published, title, content) VALUES (?, ?, ?, ?)", [request.session.userid, 0, request.body.title, request.body.content], function(error, results){
+
+            if(error){
+
+                throw error;
+            }
+            response.redirect('/home');
+        });
     }
 });
 
