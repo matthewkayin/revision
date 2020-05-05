@@ -39,7 +39,14 @@ app.get('/index.css', function(request, response){
 });
 app.get('/', function(request, response){
 
-    response.sendFile(path.join(__dirname + '/index.html'));
+    if(request.session.loggedin){
+
+        response.redirect('/home');
+
+    }else{
+
+        response.sendFile(path.join(__dirname + '/index.html'));
+    }
 });
 app.get('/about', function(request, response){
 
@@ -88,6 +95,7 @@ app.post('/auth', function(request, response){
 
             response.send("Login incorrect!");
         }
+        response.end();
     });
 });
 
@@ -108,6 +116,7 @@ app.get('/home', function(request, response){
     if(!request.session.loggedin){
 
         response.redirect('/');
+        response.end();
 
     }else{
 
@@ -116,7 +125,7 @@ app.get('/home', function(request, response){
         var post_template = fs.readFileSync('post_template.html');
         var output = template.toString().replace(/PAGETITLE/gi, "Write");
         var post_content = content.toString();
-        sqlserver.query("SELECT title, content, username FROM posts, users WHERE users.userid = ? AND users.userid = posts.userid", [request.session.userid], function(error, results){
+        sqlserver.query("SELECT title, content, DATE_FORMAT(published_date, '%M %d, %Y') AS date, username FROM posts, users WHERE users.userid = ? AND users.userid = posts.userid", [request.session.userid], function(error, results){
 
             if(error){
 
@@ -128,7 +137,16 @@ app.get('/home', function(request, response){
                 new_post = new_post.toString().replace(/POSTTITLE/gi, results[i].title);
                 new_post = new_post.toString().replace(/POSTAUTHOR/gi, results[i].username);
                 new_post = new_post.toString().replace(/POSTCONTENT/gi, results[i].content);
-                new_post = new_post.toString().replace(/POSTINFO/gi, "First revision.");
+                var info_string = "First revision.";
+                if(results[i].date == null){
+
+                    info_string += " Not published.";
+                    
+                }else{
+
+                    info_string += " " + results[i].date + ".";
+                }
+                new_post = new_post.toString().replace(/POSTINFO/gi, info_string);
                 new_post = new_post.toString().replace(/LIKES/gi, "0");
                 post_content += new_post;
             }
@@ -162,13 +180,33 @@ app.post('/save', function(request, response){
 
     }else{
 
-        sqlserver.query("INSERT INTO posts (userid, published, title, content) VALUES (?, ?, ?, ?)", [request.session.userid, 0, request.body.title, request.body.content], function(error, results){
+        sqlserver.query("INSERT INTO posts (userid, published, published_date, title, content) VALUES (?, ?, NULL, ?, ?)", [request.session.userid, 0, request.body.title, request.body.content], function(error, results){
+
+            if(error){
+
+                throw error;
+            }
+            response.redirecet('/home');
+            response.end();
+        });
+    }
+});
+app.post('/publish', function(request, response){
+
+    if(!request.session.loggedin){
+
+        response.redirect('/');
+
+    }else{
+
+        sqlserver.query("INSERT INTO posts (userid, published, published_date, title, content) VALUES (?, ?, ?, ?, ?)", [request.session.userid, 1, new Date(), request.body.title, request.body.content], function(error, results){
 
             if(error){
 
                 throw error;
             }
             response.redirect('/home');
+            response.end();
         });
     }
 });

@@ -16,6 +16,7 @@ CREATE TABLE posts(
     postid INT NOT NULL AUTO_INCREMENT,
     userid INT NOT NULL,
     published BOOLEAN,
+    published_date DATE,
     title VARCHAR(255) NOT NULL,
     content TEXT,
     PRIMARY KEY(postid)
