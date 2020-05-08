@@ -38,7 +38,41 @@ app.use(session({
 app.use(bodyparser.urlencoded({extended: true}));
 app.use(bodyparser.json());
 
-function load_home(request, response, title, content, current_page){
+function build_post_string(sql_results, set_first_post=true){
+
+    var post_template = fs.readFileSync('post_template.html');
+    var post_string = "";
+    for(var i = 0; i < sql_results.length; i++){
+
+        var first_string = "";
+        if(set_first_post && i == 0){
+
+            first_string = " first";
+        }
+        var new_post = post_template.toString().replace(/IS_FIRST/gi, first_string);
+        new_post = new_post.toString().replace(/POSTTITLE/gi, sql_results[i].title);
+        new_post = new_post.toString().replace(/POSTAUTHOR/gi, sql_results[i].username);
+        new_post = new_post.toString().replace(/POSTCONTENT/gi, sql_results[i].content);
+        var info_string = "First revision.";
+
+        if(!sql_results[i].published){
+
+            info_string += " Not published.";
+            
+        }else{
+
+            info_string += " " + sql_results[i].date + ".";
+        }
+
+        new_post = new_post.toString().replace(/POSTINFO/gi, info_string);
+        new_post = new_post.toString().replace(/LIKES/gi, "0");
+        post_string += new_post;
+    }
+
+    return post_string;
+}
+
+function send_home(request, response, title, content, current_page){
 
     if(!request.session.loggedin){
 
@@ -48,6 +82,20 @@ function load_home(request, response, title, content, current_page){
 
         var template = fs.readFileSync('home.html');
         var output = template.toString().replace(/PAGETITLE/gi, title);
+        var current_theme;
+        if(request.session.usertheme == 0){
+
+            current_theme = "theme-light";
+
+        }else if(request.session.usertheme == 1){
+
+            current_theme = "theme-solarized";
+
+        }else if(request.session.usertheme == 2){
+
+            current_theme = "theme-dark";
+        }
+        output = output.toString().replace(/PAGEDEFAULTTHEME/gi, current_theme);
         current_page_tags = ["", "", "", ""];
         current_page_tags[current_page] = " current";
         output = output.toString().replace(/PAGECURRENT1/gi, current_page_tags[0]);
@@ -165,58 +213,15 @@ app.get('/home', function(request, response){
 
     }else{
 
-        var template = fs.readFileSync('home.html');
-        var content = fs.readFileSync('new_button.html');
-        var post_template = fs.readFileSync('post_template.html');
-        var output = template.toString().replace(/PAGETITLE/gi, "Write");
-        var current_theme;
-        if(request.session.usertheme == 0){
-
-            current_theme = "theme-light";
-
-        }else if(request.session.usertheme == 1){
-
-            current_theme = "theme-solarized";
-
-        }else if(request.session.usertheme == 2){
-
-            current_theme = "theme-dark";
-        }
-        output = output.toString().replace(/PAGEDEFAULTTHEME/gi, current_theme);
-        output = output.toString().replace(/PAGECURRENT1/gi, " current");
-        output = output.toString().replace(/PAGECURRENT2/gi, "");
-        output = output.toString().replace(/PAGECURRENT3/gi, "");
-        output = output.toString().replace(/PAGECURRENT4/gi, "");
-        var post_content = content.toString();
+        var content = (fs.readFileSync('new_button.html')).toString();
         sqlserver.query("SELECT title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, username FROM posts, users WHERE users.userid = ? AND users.userid = posts.userid", [request.session.userid], function(error, results){
 
             if(error){
 
                 throw error;
             }
-            for(var i = 0; i < results.length; i++){
-
-                var new_post = post_template.toString().replace(/IS_FIRST/gi, "");
-                new_post = new_post.toString().replace(/POSTTITLE/gi, results[i].title);
-                new_post = new_post.toString().replace(/POSTAUTHOR/gi, results[i].username);
-                new_post = new_post.toString().replace(/POSTCONTENT/gi, results[i].content);
-                var info_string = "First revision.";
-                if(!results[i].published){
-
-                    info_string += " Not published.";
-                    
-                }else{
-
-                    info_string += " " + results[i].date + ".";
-                }
-                new_post = new_post.toString().replace(/POSTINFO/gi, info_string);
-                new_post = new_post.toString().replace(/LIKES/gi, "0");
-                post_content += new_post;
-            }
-            output = output.replace(/PAGECONTENT/gi, post_content);
-            response.send(output);
-            response.end();
-        });
+            content += build_post_string(results, false);
+            send_home(request, response, "Home", content, 0); });
     }
 });
 app.get('/read', function(request, response){
@@ -228,28 +233,8 @@ app.get('/read', function(request, response){
 
     }else{
 
-        var template = fs.readFileSync('home.html');
-        var output = template.toString().replace(/PAGETITLE/gi, "Read");
-        var current_theme;
-        if(request.session.usertheme == 0){
-
-            current_theme = "theme-light";
-
-        }else if(request.session.usertheme == 1){
-
-            current_theme = "theme-solarized";
-
-        }else if(request.session.usertheme == 2){
-
-            current_theme = "theme-dark";
-        }
-        output = output.toString().replace(/PAGEDEFAULTTHEME/gi, current_theme);
-        output = output.toString().replace(/PAGECURRENT1/gi, "");
-        output = output.toString().replace(/PAGECURRENT2/gi, " current");
-        output = output.toString().replace(/PAGECURRENT3/gi, "");
-        output = output.toString().replace(/PAGECURRENT4/gi, "");
-        response.send(output);
-        response.end();
+        var content = "";
+        send_home(request, response, "Read", content, 1);
     }
 });
 app.get('/discover', function(request, response){
@@ -261,64 +246,14 @@ app.get('/discover', function(request, response){
 
     }else{
 
-        var template = fs.readFileSync('home.html');
-        var post_template = fs.readFileSync('post_template.html');
-        var output = template.toString().replace(/PAGETITLE/gi, "Discover");
-        var current_theme;
-        if(request.session.usertheme == 0){
-
-            current_theme = "theme-light";
-
-        }else if(request.session.usertheme == 1){
-
-            current_theme = "theme-solarized";
-
-        }else if(request.session.usertheme == 2){
-
-            current_theme = "theme-dark";
-        }
-        output = output.toString().replace(/PAGEDEFAULTTHEME/gi, current_theme);
-        output = output.toString().replace(/PAGECURRENT1/gi, "");
-        output = output.toString().replace(/PAGECURRENT2/gi, "");
-        output = output.toString().replace(/PAGECURRENT3/gi, " current");
-        output = output.toString().replace(/PAGECURRENT4/gi, "");
-        var post_content = "";
         sqlserver.query("SELECT title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, username FROM posts, users WHERE users.userid != ? AND users.userid = posts.userid", [request.session.userid], function(error, results){
 
             if(error){
 
                 throw error;
             }
-            for(var i = 0; i < results.length; i++){
-
-                var new_post = "";
-                if(i == 0){
-
-                    new_post = post_template.toString().replace(/IS_FIRST/gi, " first");
-
-                }else{
-
-                    new_post = post_template.toString().replace(/IS_FIRST/gi, "");
-                }
-                new_post = new_post.toString().replace(/POSTTITLE/gi, results[i].title);
-                new_post = new_post.toString().replace(/POSTAUTHOR/gi, results[i].username);
-                new_post = new_post.toString().replace(/POSTCONTENT/gi, results[i].content);
-                var info_string = "First revision.";
-                if(!results[i].published){
-
-                    info_string += " Not published.";
-                    
-                }else{
-
-                    info_string += " " + results[i].date + ".";
-                }
-                new_post = new_post.toString().replace(/POSTINFO/gi, info_string);
-                new_post = new_post.toString().replace(/LIKES/gi, "0");
-                post_content += new_post;
-            }
-            output = output.replace(/PAGECONTENT/gi, post_content);
-            response.send(output);
-            response.end();
+            var content = build_post_string(results);
+            send_home(request, response, "Discover", content, 2);
         });
     }
 });
@@ -331,28 +266,8 @@ app.get('/profile', function(request, response){
 
     }else{
 
-        var template = fs.readFileSync('home.html');
-        var output = template.toString().replace(/PAGETITLE/gi, "Profile");
-        var current_theme;
-        if(request.session.usertheme == 0){
-
-            current_theme = "theme-light";
-
-        }else if(request.session.usertheme == 1){
-
-            current_theme = "theme-solarized";
-
-        }else if(request.session.usertheme == 2){
-
-            current_theme = "theme-dark";
-        }
-        output = output.toString().replace(/PAGEDEFAULTTHEME/gi, current_theme);
-        output = output.toString().replace(/PAGECURRENT1/gi, "");
-        output = output.toString().replace(/PAGECURRENT2/gi, "");
-        output = output.toString().replace(/PAGECURRENT3/gi, "");
-        output = output.toString().replace(/PAGECURRENT4/gi, " current");
-        response.send(output);
-        response.end();
+        var content = "";
+        send_home(request, response, "Profile", content, 3);
     }
 });
 app.get('/write', function(request, response){
@@ -363,30 +278,8 @@ app.get('/write', function(request, response){
 
     }else{
 
-        var template = fs.readFileSync('home.html');
         var content = fs.readFileSync('post_editor.html');
-        var output = template.toString().replace(/PAGETITLE/gi, "Write");
-        var current_theme;
-        if(request.session.usertheme == 0){
-
-            current_theme = "theme-light";
-
-        }else if(request.session.usertheme == 1){
-
-            current_theme = "theme-solarized";
-
-        }else if(request.session.usertheme == 2){
-
-            current_theme = "theme-dark";
-        }
-        output = output.toString().replace(/PAGEDEFAULTTHEME/gi, current_theme);
-        output = output.toString().replace(/PAGECURRENT1/gi, " current");
-        output = output.toString().replace(/PAGECURRENT2/gi, "");
-        output = output.toString().replace(/PAGECURRENT3/gi, "");
-        output = output.toString().replace(/PAGECURRENT4/gi, "");
-        output = output.toString().replace(/PAGECONTENT/gi, content.toString());
-        response.send(output);
-        response.end();
+        send_home(request, response, "Write", content, 0);
     }
 });
 app.post('/save', function(request, response){
