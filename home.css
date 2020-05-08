@@ -311,6 +311,8 @@ body{
 
     font-size: 15px;
     font-family: Merriweather Sans, sans-serif;
+    background: var(--bg-color);
+    color: var(--fg-color);
     width: 100%;
     padding: 15px;
     border: 1px solid var(--dark-accent-color);
@@ -321,6 +323,8 @@ body{
 
     font-size: 15px;
     font-family: Merriweather Sans, sans-serif;
+    background: var(--bg-color);
+    color: var(--fg-color);
     width: 100%;
     padding: 15px;
     border: 1px solid var(--dark-accent-color);

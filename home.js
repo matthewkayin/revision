@@ -25,7 +25,28 @@ window.onscroll = function(){
 const THEME_LIGHT = 0;
 const THEME_SOLARIZED = 1;
 const THEME_DARK = 2;
-var current_theme = THEME_LIGHT;
+var current_theme = 0;
+var initial_theme_loaded = false;
+document.addEventListener("DOMContentLoaded", function(){
+
+    if(!initial_theme_loaded){
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "/get_theme", true);
+        xhr.responseType = "json";
+        xhr.onreadystatechange = function(){
+
+            if(xhr.readyState == 4){
+
+                //console.log(xhr.response.usertheme);
+                current_theme = xhr.response.usertheme;
+                //update_theme();
+            }
+        };
+        xhr.send();
+        initial_theme_loaded = true;
+    }
+});
 function toggle_theme(){
 
     current_theme += 1;
@@ -33,6 +54,10 @@ function toggle_theme(){
 
         current_theme = 0;
     }
+
+    update_theme();
+}
+function update_theme(){
 
     if(current_theme == THEME_LIGHT){
 
@@ -46,4 +71,12 @@ function toggle_theme(){
 
         document.documentElement.className = "theme-dark";
     }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/set_theme", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify({
+
+        usertheme: current_theme
+    }));
 }
