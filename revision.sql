@@ -21,3 +21,12 @@ CREATE TABLE posts(
     content TEXT,
     PRIMARY KEY(postid)
 );
+
+CREATE TABLE likes(
+
+    postid INT NOT NULL,
+    userid INT NOT NULL,
+    PRIMARY KEY(postid, userid),
+    FOREIGN KEY(postid) REFERENCES posts(postid), 
+    FOREIGN KEY(userid) REFERENCES users(userid)
+);

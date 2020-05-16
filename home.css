@@ -192,6 +192,20 @@ body{
     float: right;
     right: 15px;
 }
+.post-follow{
+
+    font-family: Merriweather Sans, sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 25px;
+    margin-left: 25px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    border: 2px solid var(--dark-accent-color);
+    border-radius: 12px;
+}
 .new-post{
 
     text-align: center;
@@ -385,6 +399,13 @@ body{
     padding-right: 15px;
     margin: 0;
 }
+.page-info{
+
+    margin: 0;
+    width: 100%;
+    display: inline-block;
+    padding: 7px 0px;
+}
 #page-reader{
 
     font-family: Merriweather Sans, sans-serif;
@@ -419,10 +440,10 @@ body{
     height: 0px;
     z-index: 2;
 }
-.page-mobile-footer{
+#page-reader-scroll-assurance{
 
     width: 100%;
-    height: 60vh;
+    height: 0;
 }
 @media screen and (min-width: 768px){
 

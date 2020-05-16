@@ -64,8 +64,17 @@ function build_post_string(sql_results, set_first_post=true){
             info_string += " " + sql_results[i].date + ".";
         }
 
+        if(sql_results[i].has_liked){
+
+            new_post = new_post.toString().replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe800));
+
+        }else{
+
+            new_post = new_post.toString().replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe801));
+        }
+
         new_post = new_post.toString().replace(/POSTINFO/gi, info_string);
-        new_post = new_post.toString().replace(/LIKES/gi, "0");
+        new_post = new_post.toString().replace(/LIKES/gi, String(sql_results[i].num_likes));
         post_string += new_post;
     }
 
@@ -214,7 +223,16 @@ app.get('/home', function(request, response){
     }else{
 
         var content = (fs.readFileSync('new_button.html')).toString();
-        sqlserver.query("SELECT title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, username FROM posts, users WHERE users.userid = ? AND users.userid = posts.userid", [request.session.userid], function(error, results){
+        sqlserver.query(`SELECT post_results.title, post_results.content, post_results.published, post_results.date, post_results.username, post_results.num_likes, COUNT(userlikes.userid) AS has_liked 
+                         FROM (SELECT posts.postid, title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, username, COUNT(likes.userid) AS num_likes 
+                               FROM posts, users, likes 
+                               WHERE users.userid = 1 AND users.userid = posts.userid AND posts.postid = likes.postid 
+                               GROUP BY posts.postid) post_results 
+                         LEFT JOIN (SELECT posts.postid, likes.userid 
+                                    FROM posts, likes 
+                                    WHERE posts.postid = likes.postid AND likes.userid = 1) userlikes 
+                         ON post_results.postid = userlikes.postid 
+                         GROUP BY post_results.postid`, [request.session.userid, request.session.userid], function(error, results){
 
             if(error){
 

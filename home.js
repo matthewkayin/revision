@@ -129,11 +129,13 @@ function toggle_reader_focus(){
         document.getElementById("page-reader").style.height = "40vh";
         document.getElementById("page-reader").style.marginLeft = "13px";
         document.getElementById("page-reader").style.marginRight = "13px";
+        document.getElementById("page-reader-scroll-assurance").style.height = "0";
         setTimeout(() => { document.getElementById("page-reader").style.transitionDuration = "0s" }, 500);
 
     }else{
 
         focus_scroll_point = document.getElementById("page-reader").offsetTop;
+        document.getElementById("page-reader-scroll-assurance").style.height = "100vh";
         document.getElementById("page-reader").style.transitionDuration = "0.5s";
         document.getElementById("page-reader").style.height = "100vh";
         document.getElementById("page-reader").style.marginLeft = "0";
@@ -166,7 +168,6 @@ function focus_reader(){
     document.getElementById("navbar").style.bottom = "-60px";
     document.body.style.overflow = "hidden";
     document.getElementById("page-reader").style.overflowY = "scroll";
-    //document.getElementById("page-reader-scrollbar").style.left = String(document.getElementById("header").getBoundingClientRect().x) + "px";
     update_reader_scrollbar();
     document.getElementById("page-reader-scrollbar").style.height = "2px";
     focus_scroll_point = -1;
@@ -175,7 +176,6 @@ function focus_reader(){
 
 function update_reader_scrollbar(){
 
-    //var max_width = document.getElementById("header").getBoundingClientRect().width;
     var max_width = window.innerWidth;
     var scroll_percent = document.getElementById("page-reader").scrollTop / (document.getElementById("page-reader").scrollHeight - window.innerHeight);
     var actual_width = max_width * scroll_percent;
