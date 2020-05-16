@@ -115,17 +115,28 @@ function toggle_reader_focus(){
         return;
     }
 
-    var currently_focused = document.getElementById("page-reader").style.overflow == "scroll";
+    var currently_focused = document.getElementById("page-reader").style.overflowY == "scroll";
 
     if(currently_focused){
 
         document.getElementById("navbar").style.bottom = "0px";
-        document.getElementById("page-reader").style.overflow = "hidden";
-        document.body.style.overflow = "initial";
+        document.getElementById("page-reader").style.overflowY = "hidden";
+        document.body.style.overflowY = "initial";
+        document.getElementById("page-reader").style.border = "2px solid var(--dark-accent-color)";
+        document.getElementById("page-reader").style.boxShadow = "1px 2px var(--dark-accent-color)";
+        document.getElementById("page-reader").style.transitionDuration = "0.5s";
+        document.getElementById("page-reader").style.height = "40vh";
+        document.getElementById("page-reader").style.marginLeft = "13px";
+        document.getElementById("page-reader").style.marginRight = "13px";
+        setTimeout(() => { document.getElementById("page-reader").style.transitionDuration = "0s" }, 500);
 
     }else{
 
         focus_scroll_point = document.getElementById("page-reader").offsetTop;
+        document.getElementById("page-reader").style.transitionDuration = "0.5s";
+        document.getElementById("page-reader").style.height = "100vh";
+        document.getElementById("page-reader").style.marginLeft = "0";
+        document.getElementById("page-reader").style.marginRight = "0";
         if(focus_scroll_point == window.scrollY){
 
             focus_reader();
@@ -147,10 +158,13 @@ function toggle_reader_focus(){
 
 function focus_reader(){
 
+    document.getElementById("page-reader").style.transitionDuration = "0s";
+    document.getElementById("page-reader").style.border = "none";
+    document.getElementById("page-reader").style.boxShadow = "none";
     document.getElementById("header").style.top = "-52px";
     document.getElementById("navbar").style.bottom = "-60px";
     document.body.style.overflow = "hidden";
-    document.getElementById("page-reader").style.overflow = "scroll";
+    document.getElementById("page-reader").style.overflowY = "scroll";
     focus_scroll_point = -1;
     focus_scroll_direction = 0;
 }
