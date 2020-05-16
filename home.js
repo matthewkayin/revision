@@ -119,6 +119,7 @@ function toggle_reader_focus(){
 
     if(currently_focused){
 
+        document.getElementById("page-reader-scrollbar").style.height = "0px";
         document.getElementById("navbar").style.bottom = "0px";
         document.getElementById("page-reader").style.overflowY = "hidden";
         document.body.style.overflowY = "initial";
@@ -165,6 +166,18 @@ function focus_reader(){
     document.getElementById("navbar").style.bottom = "-60px";
     document.body.style.overflow = "hidden";
     document.getElementById("page-reader").style.overflowY = "scroll";
+    //document.getElementById("page-reader-scrollbar").style.left = String(document.getElementById("header").getBoundingClientRect().x) + "px";
+    update_reader_scrollbar();
+    document.getElementById("page-reader-scrollbar").style.height = "2px";
     focus_scroll_point = -1;
     focus_scroll_direction = 0;
+}
+
+function update_reader_scrollbar(){
+
+    //var max_width = document.getElementById("header").getBoundingClientRect().width;
+    var max_width = window.innerWidth;
+    var scroll_percent = document.getElementById("page-reader").scrollTop / (document.getElementById("page-reader").scrollHeight - window.innerHeight);
+    var actual_width = max_width * scroll_percent;
+    document.getElementById("page-reader-scrollbar").style.width = String(actual_width) + "px";
 }

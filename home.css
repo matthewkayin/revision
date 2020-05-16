@@ -403,6 +403,21 @@ body{
     overflow-y: hidden;
     overflow-x: hidden;
     transition-duration: 0s;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+#page-reader::-webkit-scrollbar{
+
+    display: none;
+}
+#page-reader-scrollbar{
+
+    background-color: var(--dark-accent-color);
+    display: block;
+    position: fixed;
+    top: 0;
+    height: 0px;
+    z-index: 2;
 }
 .page-mobile-footer{
 
