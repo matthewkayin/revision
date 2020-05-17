@@ -181,3 +181,29 @@ function update_reader_scrollbar(){
     var actual_width = max_width * scroll_percent;
     document.getElementById("page-reader-scrollbar").style.width = String(actual_width) + "px";
 }
+
+function toggle_like(heart){
+
+    // format: like-button-#
+    // number starts at index 12
+    var post_id = Number(heart.id.substring(12));
+    var currently_liked = heart.innerHTML == String.fromCharCode(0xe800);
+
+    if(currently_liked){
+
+        heart.innerHTML = String.fromCharCode(0xe801);
+
+    }else{
+
+        heart.innerHTML = String.fromCharCode(0xe800);
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/like", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify({
+
+        postid: post_id,
+        liked: !currently_liked
+    }));
+}

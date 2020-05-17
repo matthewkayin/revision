@@ -64,6 +64,7 @@ function build_post_string(sql_results, set_first_post=true){
             info_string += " " + sql_results[i].date + ".";
         }
 
+        new_post = new_post.toString().replace(/LIKEBUTTONID/gi, "like-button-" + String(sql_results[i].postid));
         if(sql_results[i].has_liked){
 
             new_post = new_post.toString().replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe800));
@@ -213,6 +214,42 @@ app.get('/get_theme', function(request, response){
         response.end(JSON.stringify({usertheme: request.session.usertheme}));
     }
 });
+app.post('/like', function(request, response){
+
+    if(request.session.loggedin){
+
+        sqlserver.query("SELECT * FROM likes WHERE postid = ? AND userid = ?", [request.body.postid, request.session.userid], function(error, results){
+
+            if(error){
+
+                throw error;
+            }
+
+            if(results.length == 0 && request.body.liked){
+
+                sqlserver.query("INSERT INTO likes (postid, userid) VALUES (?, ?)", [request.body.postid, request.session.userid], function(inner_error, inner_results){
+
+                    if(inner_error){
+
+                        throw inner_error;
+                    }
+                    response.end();
+                });
+
+            }else if(results.length != 0 && !request.body.liked){
+
+                sqlserver.query("DELETE FROM likes WHERE postid = ? AND userid = ?", [request.body.postid, request.session.userid], function(inner_error, inner_results){
+
+                    if(inner_error){
+
+                        throw inner_error;
+                    }
+                    response.end();
+                });
+            }
+        });
+    }
+});
 app.get('/home', function(request, response){
 
     if(!request.session.loggedin){
@@ -223,7 +260,7 @@ app.get('/home', function(request, response){
     }else{
 
         var content = (fs.readFileSync('new_button.html')).toString();
-        sqlserver.query(`SELECT post_results.title, post_results.content, post_results.published, post_results.date, post_results.username, post_results.num_likes, COUNT(userlikes.userid) AS has_liked 
+        sqlserver.query(`SELECT post_results.postid, post_results.title, post_results.content, post_results.published, post_results.date, post_results.username, post_results.num_likes, COUNT(userlikes.userid) AS has_liked 
                          FROM (SELECT posts.postid, title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, username, COUNT(likes.userid) AS num_likes 
                                FROM posts, users, likes 
                                WHERE users.userid = 1 AND users.userid = posts.userid AND posts.postid = likes.postid 
