@@ -62,9 +62,8 @@ document.addEventListener("DOMContentLoaded", function(){
 
             if(xhr.readyState == 4){
 
-                //console.log(xhr.response.usertheme);
                 current_theme = xhr.response.usertheme;
-                //update_theme();
+                update_theme();
             }
         };
         xhr.send();

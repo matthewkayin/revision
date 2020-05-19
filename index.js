@@ -38,6 +38,25 @@ app.use(session({
 app.use(bodyparser.urlencoded({extended: true}));
 app.use(bodyparser.json());
 
+function get_post_query(where_conditions){
+
+    var post_query = `SELECT posts.postid, title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, username, num_likes, has_liked
+                             FROM posts, users, (SELECT num_likes_data.postid, num_likes_data.num_likes, has_liked_data.has_liked
+                                                FROM (SELECT posts.postid, COUNT(likes.userid) AS num_likes
+                                                      FROM posts
+                                                      LEFT JOIN likes
+                                                      ON posts.postid = likes.postid
+                                                      GROUP BY posts.postid) num_likes_data
+                                                INNER JOIN (SELECT posts.postid, COUNT(userlikes.userid) AS has_liked
+                                                            FROM posts
+                                                            LEFT JOIN (SELECT * FROM likes WHERE likes.userid = ?) userlikes
+                                                            ON posts.postid = userlikes.postid
+                                                            GROUP BY posts.postid) has_liked_data
+                                                ON num_likes_data.postid = has_liked_data.postid) like_data
+                                                WHERE posts.userid = users.userid AND posts.postid = like_data.postid AND ` + where_conditions;
+    return post_query;
+}
+
 function build_post_string(sql_results, set_first_post=true){
 
     var post_template = fs.readFileSync('post_template.html');
@@ -50,6 +69,7 @@ function build_post_string(sql_results, set_first_post=true){
             first_string = " first";
         }
         var new_post = post_template.toString().replace(/IS_FIRST/gi, first_string);
+        new_post = new_post.toString().replace(/PAGEPOSTID/gi, sql_results[i].postid);
         new_post = new_post.toString().replace(/POSTTITLE/gi, sql_results[i].title);
         new_post = new_post.toString().replace(/POSTAUTHOR/gi, sql_results[i].username);
         new_post = new_post.toString().replace(/POSTCONTENT/gi, sql_results[i].content);
@@ -82,9 +102,42 @@ function build_post_string(sql_results, set_first_post=true){
     return post_string;
 }
 
-function send_home(request, response, title, content, current_page){
+// TODO add user logged in to set the like button
+function build_page_string(sql_results, user_logged_in){
 
-    if(!request.session.loggedin){
+    var page_template = fs.readFileSync('page_template.html');
+    var page_string = "";
+    if(sql_results.length == 0 || sql_results.length == 1 && !sql_results[0].published){
+
+        page_string =`  <div class="page">
+                            <h1 class="page-title">Error! Post not found!</h1>
+                            <h2 class="post-author"><a href='/'>&#171 Return home</a></h2>
+                        </div>`;
+
+    }else{
+
+        page_string = page_template.toString();
+        page_string = page_string.replace(/POSTTITLE/gi, sql_results[0].title);
+        page_string = page_string.replace(/POSTAUTHOR/gi, sql_results[0].username);
+        page_string = page_string.replace(/POSTCONTENT/gi, sql_results[0].content);
+        if(sql_results.has_liked){
+
+            page_string = page_string.replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe800));
+
+        }else{
+
+            page_string = page_string.replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe801));
+        }
+        page_string = page_string.replace(/POSTLIKES/gi, sql_results[0].num_likes); 
+        page_string = page_string.replace(/POSTINFO/gi, sql_results[0].date); 
+    }
+
+    return page_string;
+}
+
+function send_home(request, response, title, content, current_page, allow_skip_login=false){
+
+    if(!request.session.loggedin && !allow_skip_login){
 
         response.redirect('/');
 
@@ -107,7 +160,10 @@ function send_home(request, response, title, content, current_page){
         }
         output = output.toString().replace(/PAGEDEFAULTTHEME/gi, current_theme);
         current_page_tags = ["", "", "", ""];
-        current_page_tags[current_page] = " current";
+        if(current_page != -1){
+
+            current_page_tags[current_page] = " current";
+        }
         output = output.toString().replace(/PAGECURRENT1/gi, current_page_tags[0]);
         output = output.toString().replace(/PAGECURRENT2/gi, current_page_tags[1]);
         output = output.toString().replace(/PAGECURRENT3/gi, current_page_tags[2]);
@@ -212,6 +268,11 @@ app.get('/get_theme', function(request, response){
 
         response.setHeader('Content-Type', 'application/json');
         response.end(JSON.stringify({usertheme: request.session.usertheme}));
+
+    }else{
+
+        response.setHeader('Content-Type', 'application/json');
+        response.end(JSON.stringify({usertheme: 0}));
     }
 });
 app.post('/like', function(request, response){
@@ -260,16 +321,7 @@ app.get('/home', function(request, response){
     }else{
 
         var content = (fs.readFileSync('new_button.html')).toString();
-        sqlserver.query(`SELECT post_results.postid, post_results.title, post_results.content, post_results.published, post_results.date, post_results.username, post_results.num_likes, COUNT(userlikes.userid) AS has_liked 
-                         FROM (SELECT posts.postid, title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, username, COUNT(likes.userid) AS num_likes 
-                               FROM posts, users, likes 
-                               WHERE users.userid = 1 AND users.userid = posts.userid AND posts.postid = likes.postid 
-                               GROUP BY posts.postid) post_results 
-                         LEFT JOIN (SELECT posts.postid, likes.userid 
-                                    FROM posts, likes 
-                                    WHERE posts.postid = likes.postid AND likes.userid = 1) userlikes 
-                         ON post_results.postid = userlikes.postid 
-                         GROUP BY post_results.postid`, [request.session.userid, request.session.userid], function(error, results){
+        sqlserver.query(get_post_query('users.userid = ?'), [request.session.userid, request.session.userid], function(error, results){
 
             if(error){
 
@@ -374,6 +426,23 @@ app.post('/publish', function(request, response){
             response.end();
         });
     }
+});
+app.get('/post', function(request, response){
+
+    var userid = -1;
+    if(request.session.loggedid){
+
+        userid = request.session.userid;
+    }
+    sqlserver.query(get_post_query('posts.postid = ?'), [userid, request.query.postid], function(error, results){
+
+        if(error){
+
+            throw error;
+        }
+        var page_string = build_page_string(results);
+        send_home(request, response, "Home", page_string, -1, true);
+    });
 });
 
 app.listen(8080);

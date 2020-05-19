@@ -18,7 +18,7 @@ CREATE TABLE posts(
     published BOOLEAN,
     published_date DATE,
     title VARCHAR(255) NOT NULL,
-    content TEXT,
+    content MEDIUMTEXT,
     PRIMARY KEY(postid)
 );
 
