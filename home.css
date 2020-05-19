@@ -452,7 +452,7 @@ body{
 }
 #page-reader-scrollbar{
 
-    background-color: var(--dark-accent-color);
+    background-color: var(--fg-color);
     display: block;
     position: fixed;
     top: 0;
