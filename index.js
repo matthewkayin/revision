@@ -103,7 +103,7 @@ function build_post_string(sql_results, set_first_post=true){
 }
 
 // TODO add user logged in to set the like button
-function build_page_string(sql_results, user_logged_in){
+function build_page_string(sql_results, comment_results, user_logged_in){
 
     var page_template = fs.readFileSync('page_template.html');
     var page_string = "";
@@ -130,6 +130,20 @@ function build_page_string(sql_results, user_logged_in){
         }
         page_string = page_string.replace(/POSTLIKES/gi, sql_results[0].num_likes); 
         page_string = page_string.replace(/POSTINFO/gi, sql_results[0].date); 
+        page_string = page_string.replace(/PAGEPOSTID/gi, sql_results[0].postid); 
+
+        var comment_string = "";
+        var comment_template = fs.readFileSync('comment_template.html');
+        for(var i = 0; i < comment_results.length; i++){
+
+            var next_comment = comment_template.toString();
+            next_comment = next_comment.replace(/COMMENTAUTHOR/gi, comment_results[i].username);
+            next_comment = next_comment.replace(/COMMENTCONTENT/gi, comment_results[i].content);
+            next_comment = next_comment.replace(/COMMENTDATE/gi, comment_results[i].date);
+
+            comment_string += next_comment;
+        }
+        page_string = page_string.replace(/PAGECOMMENTS/gi, comment_string);
     }
 
     return page_string;
@@ -440,9 +454,32 @@ app.get('/post', function(request, response){
 
             throw error;
         }
-        var page_string = build_page_string(results);
-        send_home(request, response, "Home", page_string, -1, true);
+
+        sqlserver.query("SELECT username, content, DATE_FORMAT(published_date, '%M %d, %Y') AS date FROM comments, users WHERE comments.postid = ? AND comments.userid = users.userid", [request.query.postid], function(comment_error, comment_results){
+
+            var page_string = build_page_string(results, comment_results);
+            send_home(request, response, "Home", page_string, -1, true);
+        });
     });
+});
+app.post('/comment', function(request, response){
+
+    if(!request.session.loggedin){
+
+        response.redirect('/post?postid=' + request.body.postid);
+
+    }else{
+
+        sqlserver.query("INSERT INTO comments (postid, userid, content, published_date) VALUES (?, ?, ?, ?)", [request.body.postid, request.session.userid, request.body.content, new Date()], function(error, results){
+
+            if(error){
+
+                throw error;
+            }
+
+            response.redirect('/post?postid=' + request.body.postid);
+        });
+    }
 });
 
 app.listen(8080);

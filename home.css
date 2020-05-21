@@ -409,9 +409,6 @@ body{
     font-family: Merriweather Sans, sans-serif;
     color: var(--fg-color);
     font-weight: 300;
-}
-.page-author{
-
     font-size: 16px;
     padding-top: 10px;
     padding-left: 15px;
@@ -463,6 +460,65 @@ body{
 
     width: 100%;
     height: 0;
+}
+#comment-declare{
+
+    margin-bottom: 25px;
+}
+.comment-form{
+
+    display: block;
+    margin-bottom: 25px;
+    width: 100%;
+}
+.comment-box{
+
+    padding: 15px;
+    font-family: Merriweather Sans, sans-serif;
+    font-weight: 300;
+    font-size: 15px;
+    display: block;
+    width: calc(100% - 30px);
+    margin-left: 15px;
+    margin-right: 15px;
+    box-sizing: border-box;
+    border: 1px solid var(--fg-color);
+    overflow: hidden;
+    resize: none;
+}
+.comment{
+
+    border-bottom: 1px solid var(--accent-color);
+    width: 100%;
+}
+.comment-author{
+
+    font-family: Merriweather Sans, sans-serif;
+    font-weight: 700;
+    color: var(--fg-color);
+    font-size: 18px;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+.comment-text{
+
+    font-family: Merriweather Sans, sans-serif;
+    font-weight: 300;
+    color: var(--fg-color);
+    font-size: 16px;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+.comment-info{
+
+    margin: 0;
+    width: 100%;
+    display: inline-block;
+    padding: 7px 0px;
 }
 @media screen and (min-width: 768px){
 
