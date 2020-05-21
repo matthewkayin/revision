@@ -187,15 +187,23 @@ function toggle_like(heart){
     // number starts at index 12
     var post_id = Number(heart.id.substring(12));
     var currently_liked = heart.innerHTML == String.fromCharCode(0xe800);
+    var add_like = 0;
 
     if(currently_liked){
 
         heart.innerHTML = String.fromCharCode(0xe801);
+        add_like = -1;
 
     }else{
 
         heart.innerHTML = String.fromCharCode(0xe800);
+        add_like = 1;
     }
+
+    var previous_html = heart.parentNode.innerHTML;
+    var prefix = previous_html.substring(0, previous_html.indexOf("</span> ") + 7);
+    var suffix = Number(previous_html.substring(previous_html.indexOf("</span> ") + 8));
+    heart.parentNode.innerHTML = prefix + " " + String(suffix + add_like);
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/like", true);

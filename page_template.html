@@ -4,7 +4,7 @@
     <h2 class="page-author">POSTAUTHOR</h2>
     <p id="page-reader" onclick="toggle_reader_focus();" onscroll="update_reader_scrollbar();">POSTCONTENT</p>
     <div id="page-reader-scroll-assurance"></div>
-    <div class="page-info"><span class="post-heart-container"><span class="post-heart">HEARTSYMBOL</span> POSTLIKES</span><span class="post-follow">Follow</span><span class="post-tags">POSTINFO</span></div>
+    <div class="page-info"><span class="post-heart-container"><span class="post-heart" id="LIKEBUTTONID" onclick="toggle_like(this)">HEARTSYMBOL</span> POSTLIKES</span><span class="post-follow">Follow</span><span class="post-tags">POSTINFO</span></div>
     <h2 class="page-author">Comments</h2>
     <form class="comment-form" action="comment" method="POST">
         <textarea class="comment-box" name="content" placeholder="Write a comment..." rows="1" oninput="resize_textarea(this);" onkeypress="handle_commentbox_key(this, event);"></textarea>

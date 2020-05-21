@@ -120,7 +120,7 @@ function build_page_string(sql_results, comment_results, user_logged_in){
         page_string = page_string.replace(/POSTTITLE/gi, sql_results[0].title);
         page_string = page_string.replace(/POSTAUTHOR/gi, sql_results[0].username);
         page_string = page_string.replace(/POSTCONTENT/gi, sql_results[0].content);
-        if(sql_results.has_liked){
+        if(sql_results[0].has_liked){
 
             page_string = page_string.replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe800));
 
@@ -131,6 +131,7 @@ function build_page_string(sql_results, comment_results, user_logged_in){
         page_string = page_string.replace(/POSTLIKES/gi, sql_results[0].num_likes); 
         page_string = page_string.replace(/POSTINFO/gi, sql_results[0].date); 
         page_string = page_string.replace(/PAGEPOSTID/gi, sql_results[0].postid); 
+        page_string = page_string.replace(/LIKEBUTTONID/gi, "like-button-" + String(sql_results[0].postid));
 
         var comment_string = "";
         var comment_template = fs.readFileSync('comment_template.html');
@@ -444,7 +445,7 @@ app.post('/publish', function(request, response){
 app.get('/post', function(request, response){
 
     var userid = -1;
-    if(request.session.loggedid){
+    if(request.session.loggedin){
 
         userid = request.session.userid;
     }
