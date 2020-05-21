@@ -1,7 +1,7 @@
 <div class="post first">
     <form class="draft-form" method="POST">
         <input type="text" name="title" placeholder="Title">
-        <textarea value="" name="content" placeholder="Once upon a midnight dreary..." rows="8" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px';"></textarea>
+        <textarea value="" name="content" placeholder="Once upon a midnight dreary..." rows="8" oninput="resize_textarea(this);"></textarea>
         <input type="submit" formaction="publish" value="Publish">
         <input type="submit" formaction="save" class="light" value="Save Draft">
     </form>

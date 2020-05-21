@@ -206,3 +206,23 @@ function toggle_like(heart){
         liked: !currently_liked
     }));
 }
+
+function resize_textarea(textarea){
+
+    textarea.style.height = '';
+    textarea.style.height = textarea.scrollHeight + 'px';
+}
+
+function handle_commentbox_key(textarea, e){
+
+    if(e.which == 13 && e.shiftKey){
+
+        textarea.value += '\n';
+
+    }else if(e.which == 13 && !e.shiftKey){
+
+        textarea.value = textarea.value.toString().replace(/\n/g, '<br/>');
+        document.forms[0].submit();
+        e.preventDefault();
+    }
+}
