@@ -250,7 +250,7 @@ app.get('/signup', function(request, response){
 
 app.post('/signup', function(request, response){
 
-    sqlserver.query("INSERT INTO users (email, username, password) VALUES (?, ?, ?)", [request.body.email, request.body.username, request.body.password], function(error, result){
+    sqlserver.query("INSERT INTO users (email, username, password, bio) VALUES (?, ?, ?, ?)", [request.body.email, request.body.username, request.body.password, "This is a new user."], function(error, result){
 
     });
     sqlserver.query("SELECT * FROM users WHERE users.email = ? AND users.password = ?", [request.body.email, request.body.password], function(error, results){
@@ -548,6 +548,44 @@ app.post('/comment', function(request, response){
             response.redirect('/post?postid=' + request.body.postid);
         });
     }
+});
+app.get('/user', function(request, response){
+
+    var userid = -1;
+    if(request.session.loggedin){
+
+        userid = request.session.userid;
+    }
+    sqlserver.query('SELECT username, bio FROM users WHERE users.userid = ?', [request.query.userid], function(error, results){
+
+        if(error){
+
+            throw error;
+        }
+
+        if(results.length == 0){
+
+            var content_string = "<div class='page'><h1 class='page-title'>Error! User not found!</h1></div>";
+            send_home(request, response, "Home", content_string, -1, true);
+
+        }else{
+
+            sqlserver.query(get_post_query('users.userid = ?'), [userid, userid, request.query.userid], function(inner_error, inner_results){
+
+                if(inner_error){
+
+                    throw inner_error;
+                }
+
+                var post_string = build_post_string(inner_results);
+                var content_string = fs.readFileSync('user_template.html').toString();
+                content_string = content_string.replace(/PAGEUSER/gi, results[0].username);
+                content_string = content_string.replace(/PAGEBIO/gi, results[0].bio);
+                content_string = content_string.replace(/PAGEPOSTS/gi, post_string);
+                send_home(request, response, "Home", content_string, -1, true);
+            });
+        }
+    });
 });
 
 app.listen(8080);

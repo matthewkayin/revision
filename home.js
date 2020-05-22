@@ -249,6 +249,14 @@ function resize_textarea(textarea){
     textarea.style.height = textarea.scrollHeight + 'px';
 }
 
+function handle_postbox_key(textarea, e){
+
+    if(e.which == 13){
+
+        textarea.value += '\n';
+    }
+}
+
 function handle_commentbox_key(textarea, e){
 
     if(e.which == 13 && e.shiftKey){
@@ -261,4 +269,10 @@ function handle_commentbox_key(textarea, e){
         document.forms[0].submit();
         e.preventDefault();
     }
+}
+
+function format_editor_text(){
+
+    var textarea = document.getElementById("draft-textarea");
+    textarea.value = textarea.value.toString().replace(/\n/g, '<br/>');
 }
