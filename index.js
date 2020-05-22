@@ -40,20 +40,27 @@ app.use(bodyparser.json());
 
 function get_post_query(where_conditions){
 
-    var post_query = `SELECT posts.postid, title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, username, num_likes, has_liked
-                             FROM posts, users, (SELECT num_likes_data.postid, num_likes_data.num_likes, has_liked_data.has_liked
-                                                FROM (SELECT posts.postid, COUNT(likes.userid) AS num_likes
-                                                      FROM posts
-                                                      LEFT JOIN likes
-                                                      ON posts.postid = likes.postid
-                                                      GROUP BY posts.postid) num_likes_data
-                                                INNER JOIN (SELECT posts.postid, COUNT(userlikes.userid) AS has_liked
-                                                            FROM posts
-                                                            LEFT JOIN (SELECT * FROM likes WHERE likes.userid = ?) userlikes
-                                                            ON posts.postid = userlikes.postid
-                                                            GROUP BY posts.postid) has_liked_data
-                                                ON num_likes_data.postid = has_liked_data.postid) like_data
-                                                WHERE posts.userid = users.userid AND posts.postid = like_data.postid AND ` + where_conditions;
+    var post_query = `SELECT posts.postid, title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, username, num_likes, has_liked, has_followed
+                             FROM posts, users, (SELECT like_data.postid, like_data.num_likes, like_data.has_liked, follow_data.has_followed
+                                                 FROM (SELECT num_likes_data.postid, num_likes_data.num_likes, has_liked_data.has_liked
+                                                       FROM (SELECT posts.postid, COUNT(likes.userid) AS num_likes
+                                                             FROM posts
+                                                             LEFT JOIN likes
+                                                             ON posts.postid = likes.postid
+                                                             GROUP BY posts.postid) num_likes_data
+                                                       INNER JOIN (SELECT posts.postid, COUNT(userlikes.userid) AS has_liked
+                                                                   FROM posts
+                                                                   LEFT JOIN (SELECT * FROM likes WHERE likes.userid = ?) userlikes
+                                                                   ON posts.postid = userlikes.postid
+                                                                   GROUP BY posts.postid) has_liked_data
+                                                       ON num_likes_data.postid = has_liked_data.postid) like_data
+                                                 INNER JOIN (SELECT posts.postid, COUNT(userfollows.userid) AS has_followed
+                                                             FROM posts
+                                                             LEFT JOIN (SELECT * FROM follows WHERE follows.userid = ?) userfollows
+                                                             ON posts.postid = userfollows.postid
+                                                             GROUP BY posts.postid) follow_data
+                                                 ON like_data.postid = follow_data.postid) interaction_data
+                             WHERE posts.userid = users.userid AND posts.postid = interaction_data.postid AND ` + where_conditions;
     return post_query;
 }
 
@@ -93,6 +100,17 @@ function build_post_string(sql_results, set_first_post=true){
 
             new_post = new_post.toString().replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe801));
         }
+        new_post = new_post.toString().replace(/FOLLOWBUTTONID/gi, "follow-button-" + String(sql_results[i].postid));
+        if(sql_results[i].has_followed){
+        
+            new_post = new_post.toString().replace(/POSTFOLLOWED/gi, " filled");
+            new_post = new_post.toString().replace(/POSTFOLLOW/gi, "Unfollow");
+
+        }else{
+
+            new_post = new_post.toString().replace(/POSTFOLLOWED/gi, "");
+            new_post = new_post.toString().replace(/POSTFOLLOW/gi, "Follow");
+        }
 
         new_post = new_post.toString().replace(/POSTINFO/gi, info_string);
         new_post = new_post.toString().replace(/LIKES/gi, String(sql_results[i].num_likes));
@@ -120,6 +138,8 @@ function build_page_string(sql_results, comment_results, user_logged_in){
         page_string = page_string.replace(/POSTTITLE/gi, sql_results[0].title);
         page_string = page_string.replace(/POSTAUTHOR/gi, sql_results[0].username);
         page_string = page_string.replace(/POSTCONTENT/gi, sql_results[0].content);
+
+        page_string = page_string.replace(/LIKEBUTTONID/gi, "like-button-" + String(sql_results[0].postid));
         if(sql_results[0].has_liked){
 
             page_string = page_string.replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe800));
@@ -128,10 +148,21 @@ function build_page_string(sql_results, comment_results, user_logged_in){
 
             page_string = page_string.replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe801));
         }
+        page_string = page_string.replace(/FOLLOWBUTTONID/gi, "follow-button-" + String(sql_results[0].postid));
+        if(sql_results[0].has_followed){
+
+            page_string = page_string.replace(/POSTFOLLOWED/gi, " filled");
+            page_string = page_string.replace(/POSTFOLLOW/gi, "Unfollow");
+
+        }else{
+
+            page_string = page_string.replace(/POSTFOLLOWED/gi, "");
+            page_string = page_string.replace(/POSTFOLLOW/gi, "Follow");
+        }
+
         page_string = page_string.replace(/POSTLIKES/gi, sql_results[0].num_likes); 
         page_string = page_string.replace(/POSTINFO/gi, sql_results[0].date); 
         page_string = page_string.replace(/PAGEPOSTID/gi, sql_results[0].postid); 
-        page_string = page_string.replace(/LIKEBUTTONID/gi, "like-button-" + String(sql_results[0].postid));
 
         var comment_string = "";
         var comment_template = fs.readFileSync('comment_template.html');
@@ -326,6 +357,42 @@ app.post('/like', function(request, response){
         });
     }
 });
+app.post('/follow', function(request, response){
+
+    if(request.session.loggedin){
+
+        sqlserver.query("SELECT * FROm follows WHERE postid = ? AND userid = ?", [request.body.postid, request.session.userid], function(error, results){
+
+            if(error){
+
+                throw error;
+            }
+
+            if(results.length == 0 && request.body.followed){
+
+                sqlserver.query("INSERT INTO follows (postid, userid) VALUES (?, ?)", [request.body.postid, request.session.userid], function(inner_error, inner_results){
+
+                    if(inner_error){
+
+                        throw inner_error;
+                    }
+                    response.end();
+                });
+
+            }else if(results.length != 0 && !request.body.followed){
+
+                sqlserver.query("DELETE FROM follows WHERE postid = ? AND userid = ?", [request.body.postid, request.session.userid], function(inner_error, inner_results){
+
+                    if(inner_error){
+
+                        throw inner_error;
+                    }
+                    response.end();
+                });
+            }
+        });
+    }
+});
 app.get('/home', function(request, response){
 
     if(!request.session.loggedin){
@@ -336,7 +403,7 @@ app.get('/home', function(request, response){
     }else{
 
         var content = (fs.readFileSync('new_button.html')).toString();
-        sqlserver.query(get_post_query('users.userid = ?'), [request.session.userid, request.session.userid], function(error, results){
+        sqlserver.query(get_post_query('users.userid = ?'), [request.session.userid, request.session.userid, request.session.userid], function(error, results){
 
             if(error){
 
@@ -449,7 +516,7 @@ app.get('/post', function(request, response){
 
         userid = request.session.userid;
     }
-    sqlserver.query(get_post_query('posts.postid = ?'), [userid, request.query.postid], function(error, results){
+    sqlserver.query(get_post_query('posts.postid = ?'), [userid, userid, request.query.postid], function(error, results){
 
         if(error){
 

@@ -32,6 +32,15 @@ CREATE TABLE likes(
     FOREIGN KEY(userid) REFERENCES users(userid)
 );
 
+CREATE TABLE follows(
+
+    postid INT NOT NULL,
+    userid INT NOT NULL,
+    PRIMARY KEY(postid, userid),
+    FOREIGN KEY(postid) REFERENCES posts(postid),
+    FOREIGN KEY(userid) REFERENCES users(userid)
+);
+
 CREATE TABLE comments(
 
     commentid INT NOT NULL AUTO_INCREMENT,

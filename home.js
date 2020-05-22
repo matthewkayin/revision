@@ -215,6 +215,34 @@ function toggle_like(heart){
     }));
 }
 
+function toggle_follow(button){
+
+    // format: follow-button-#
+    // number starts at index 14
+    var post_id = Number(button.id.substring(14));
+    var currently_followed = button.innerHTML == "Unfollow";
+
+    if(currently_followed){
+
+        button.innerHTML = "Follow";
+        button.classList.remove("filled");
+
+    }else{
+
+        button.innerHTML = "Unfollow";
+        button.classList.add("filled");
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/follow", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify({
+
+        postid: post_id,
+        followed: !currently_followed
+    }));
+}
+
 function resize_textarea(textarea){
 
     textarea.style.height = '';

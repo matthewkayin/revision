@@ -223,6 +223,12 @@ body{
     cursor: pointer;
     user-select: none;
 }
+.post-follow.filled{
+
+    background-color: var(--dark-accent-color);
+    border-color: var(--dark-accent-color);
+    color: var(--bg-color);
+}
 .new-post{
 
     text-align: center;
