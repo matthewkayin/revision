@@ -562,7 +562,6 @@ body{
     vertical-align: middle;
     cursor: pointer;
     user-select: none;
-    display: initial;
 }
 .disabled{
 

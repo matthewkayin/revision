@@ -64,17 +64,31 @@ function get_post_query(where_conditions){
     return post_query;
 }
 
-function build_post_string(sql_results, set_first_post=true){
+function build_post_string(sql_results, session_userid, set_first_post=true){
 
     var post_template = fs.readFileSync('post_template.html');
     var post_string = "";
     for(var i = 0; i < sql_results.length; i++){
+
+        if(!sql_results[i].published){
+
+            if(sql_results[i].userid != session_userid){
+
+                continue;
+            }
+            info_string += " Not published.";
+            
+        }else{
+
+            info_string += " " + sql_results[i].date + ".";
+        }
 
         var first_string = "";
         if(set_first_post && i == 0){
 
             first_string = " first";
         }
+
         var new_post = post_template.toString().replace(/IS_FIRST/gi, first_string);
         new_post = new_post.toString().replace(/PAGEPOSTID/gi, sql_results[i].postid);
         new_post = new_post.toString().replace(/PAGEUSERID/gi, sql_results[i].userid);
@@ -82,15 +96,6 @@ function build_post_string(sql_results, set_first_post=true){
         new_post = new_post.toString().replace(/POSTAUTHOR/gi, sql_results[i].username);
         new_post = new_post.toString().replace(/POSTCONTENT/gi, sql_results[i].content);
         var info_string = "First revision.";
-
-        if(!sql_results[i].published){
-
-            info_string += " Not published.";
-            
-        }else{
-
-            info_string += " " + sql_results[i].date + ".";
-        }
 
         new_post = new_post.toString().replace(/LIKEBUTTONID/gi, "like-button-" + String(sql_results[i].postid));
         if(sql_results[i].has_liked){
@@ -102,15 +107,23 @@ function build_post_string(sql_results, set_first_post=true){
             new_post = new_post.toString().replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe801));
         }
         new_post = new_post.toString().replace(/FOLLOWBUTTONID/gi, "follow-button-" + String(sql_results[i].postid));
-        if(sql_results[i].has_followed){
-        
-            new_post = new_post.toString().replace(/POSTFOLLOWED/gi, " filled");
-            new_post = new_post.toString().replace(/POSTFOLLOW/gi, "Unfollow");
+        if(sql_results[i].userid == session_userid){
+
+            new_post = new_post.toString().replace(/POSTFOLLOWED/gi, "");
+            new_post = new_post.toString().replace(/POSTFOLLOW/gi, "Revise");
 
         }else{
 
-            new_post = new_post.toString().replace(/POSTFOLLOWED/gi, "");
-            new_post = new_post.toString().replace(/POSTFOLLOW/gi, "Follow");
+            if(sql_results[i].has_followed){
+            
+                new_post = new_post.toString().replace(/POSTFOLLOWED/gi, " filled");
+                new_post = new_post.toString().replace(/POSTFOLLOW/gi, "Unfollow");
+
+            }else{
+
+                new_post = new_post.toString().replace(/POSTFOLLOWED/gi, "");
+                new_post = new_post.toString().replace(/POSTFOLLOW/gi, "Follow");
+            }
         }
 
         new_post = new_post.toString().replace(/POSTINFO/gi, info_string);
@@ -122,7 +135,7 @@ function build_post_string(sql_results, set_first_post=true){
 }
 
 // TODO add user logged in to set the like button
-function build_page_string(sql_results, comment_results, user_logged_in){
+function build_page_string(sql_results, comment_results, session_userid){
 
     var page_template = fs.readFileSync('page_template.html');
     var page_string = "";
@@ -150,15 +163,23 @@ function build_page_string(sql_results, comment_results, user_logged_in){
             page_string = page_string.replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe801));
         }
         page_string = page_string.replace(/FOLLOWBUTTONID/gi, "follow-button-" + String(sql_results[0].postid));
-        if(sql_results[0].has_followed){
+        if(sql_results[0].userid == session_userid){
 
-            page_string = page_string.replace(/POSTFOLLOWED/gi, " filled");
-            page_string = page_string.replace(/POSTFOLLOW/gi, "Unfollow");
+            page_string = page_string.replace(/POSTFOLLOWED/gi, "");
+            page_string = page_string.replace(/POSTFOLLOW/gi, "Revise");
 
         }else{
 
-            page_string = page_string.replace(/POSTFOLLOWED/gi, "");
-            page_string = page_string.replace(/POSTFOLLOW/gi, "Follow");
+            if(sql_results[0].has_followed){
+
+                page_string = page_string.replace(/POSTFOLLOWED/gi, " filled");
+                page_string = page_string.replace(/POSTFOLLOW/gi, "Unfollow");
+
+            }else{
+
+                page_string = page_string.replace(/POSTFOLLOWED/gi, "");
+                page_string = page_string.replace(/POSTFOLLOW/gi, "Follow");
+            }
         }
 
         page_string = page_string.replace(/POSTLIKES/gi, sql_results[0].num_likes); 
@@ -243,69 +264,90 @@ app.get('/about', function(request, response){
 });
 app.get('/login', function(request, response){
 
-    var login = fs.readFileSync('login.html').toString();
-    login = login.replace(/ERRORMESSAGE/gi, "");
-    response.send(login);
-    response.end();
+    if(request.session.loggedin){
+
+        response.redirect('/');
+
+    }else{
+
+        var login = fs.readFileSync('login.html').toString();
+        login = login.replace(/ERRORMESSAGE/gi, "");
+        response.send(login);
+        response.end();
+    }
 });
 app.get('/signup', function(request, response){
 
-    var signup = fs.readFileSync('signup.html').toString();
-    signup = signup.replace(/ERRORMESSAGE/gi, "");
-    response.send(signup);
-    response.end();
+    if(request.session.loggedin){
+
+        response.redirect('/');
+
+    }else{
+
+        var signup = fs.readFileSync('signup.html').toString();
+        signup = signup.replace(/ERRORMESSAGE/gi, "");
+        response.send(signup);
+        response.end();
+    }
 });
 
 app.post('/signup', function(request, response){
 
-    sqlserver.query("SELECT * FROM users WHERE users.email = ?", [request.body.email], function(validate_error, validate_results){
+    if(request.session.loggedin){
 
-        if(validate_error){
+        response.redirect('/');
 
-            throw validate_error;
-        }
+    }else{
 
-        if(validate_results.length != 0){
+        sqlserver.query("SELECT * FROM users WHERE users.email = ?", [request.body.email], function(validate_error, validate_results){
 
-            var signup = fs.readFileSync('signup.html').toString();
-            signup = signup.replace(/ERRORMESSAGE/gi, "The email address you entered has already been used with an account!")
-            response.send(signup);
-            response.end();
+            if(validate_error){
 
-        }else{
+                throw validate_error;
+            }
 
-            sqlserver.query("INSERT INTO users (email, username, password, bio) VALUES (?, ?, ?, ?)", [request.body.email, request.body.username, request.body.password, "This is a new user."], function(error, result){
+            if(validate_results.length != 0){
 
-                if(error){
+                var signup = fs.readFileSync('signup.html').toString();
+                signup = signup.replace(/ERRORMESSAGE/gi, "The email address you entered has already been used with an account!")
+                response.send(signup);
+                response.end();
 
-                    throw error;
-                }
+            }else{
 
-                sqlserver.query("SELECT * FROM users WHERE users.email = ? AND users.password = ?", [request.body.email, request.body.password], function(inner_error, inner_results){
+                sqlserver.query("INSERT INTO users (email, username, password, bio) VALUES (?, ?, ?, ?)", [request.body.email, request.body.username, request.body.password, "This is a new user."], function(error, result){
 
-                    if(inner_error){
+                    if(error){
 
-                        throw inner_error;
+                        throw error;
                     }
 
-                    if(inner_results.length > 0){
+                    sqlserver.query("SELECT * FROM users WHERE users.email = ? AND users.password = ?", [request.body.email, request.body.password], function(inner_error, inner_results){
 
-                        request.session.loggedin = true;
-                        request.session.userid = inner_results[0].userid;
-                        request.session.usertheme = 0;
-                        response.redirect('/home');
+                        if(inner_error){
 
-                    }else{
+                            throw inner_error;
+                        }
 
-                        var signup = fs.readFileSync('signup.html').toString();
-                        signup = signup.replace(/ERRORMESSAGE/gi, "Signup failed!");
-                        response.send(signup);
-                        response.end();
-                    }
+                        if(inner_results.length > 0){
+
+                            request.session.loggedin = true;
+                            request.session.userid = inner_results[0].userid;
+                            request.session.usertheme = 0;
+                            response.redirect('/home');
+
+                        }else{
+
+                            var signup = fs.readFileSync('signup.html').toString();
+                            signup = signup.replace(/ERRORMESSAGE/gi, "Signup failed!");
+                            response.send(signup);
+                            response.end();
+                        }
+                    });
                 });
-            });
-        }
-    });
+            }
+        });
+    }
 });
 
 app.post('/auth', function(request, response){
@@ -450,7 +492,7 @@ app.get('/home', function(request, response){
 
                 throw error;
             }
-            content += build_post_string(results, false);
+            content += build_post_string(results, request.session.userid, false);
             send_home(request, response, "Home", content, 0); });
     }
 });
@@ -564,7 +606,7 @@ app.get('/post', function(request, response){
 
         sqlserver.query("SELECT username, content, DATE_FORMAT(published_date, '%M %d, %Y') AS date FROM comments, users WHERE comments.postid = ? AND comments.userid = users.userid", [request.query.postid], function(comment_error, comment_results){
 
-            var page_string = build_page_string(results, comment_results);
+            var page_string = build_page_string(results, comment_results, request.session.userid);
             send_home(request, response, "Home", page_string, -1, true);
         });
     });
@@ -635,7 +677,7 @@ app.get('/user', function(request, response){
                     throw inner_error;
                 }
 
-                var post_string = build_post_string(inner_results);
+                var post_string = build_post_string(inner_results, userid);
                 var content_string = fs.readFileSync('user_template.html').toString();
                 content_string = content_string.replace(/PAGEUSERID/gi, request.query.userid);
                 content_string = content_string.replace(/PAGEUSER/gi, results[0].username);
@@ -647,7 +689,7 @@ app.get('/user', function(request, response){
 
                 }else{
 
-                    content_string = content_string.replace(/ENABLEEDIT/gi, " disabled");
+                    content_string = content_string.replace(/ENABLEEDIT/gi, "disabled");
                 }
                 var current_page = -1;
                 if(request.query.userid == request.session.userid){
