@@ -243,30 +243,67 @@ app.get('/about', function(request, response){
 });
 app.get('/login', function(request, response){
 
-    response.sendFile(path.join(__dirname + '/login.html'));
+    var login = fs.readFileSync('login.html').toString();
+    login = login.replace(/ERRORMESSAGE/gi, "");
+    response.send(login);
+    response.end();
 });
 app.get('/signup', function(request, response){
 
-    response.sendFile(path.join(__dirname + '/signup.html'));
+    var signup = fs.readFileSync('signup.html').toString();
+    signup = signup.replace(/ERRORMESSAGE/gi, "");
+    response.send(signup);
+    response.end();
 });
 
 app.post('/signup', function(request, response){
 
-    sqlserver.query("INSERT INTO users (email, username, password, bio) VALUES (?, ?, ?, ?)", [request.body.email, request.body.username, request.body.password, "This is a new user."], function(error, result){
+    sqlserver.query("SELECT * FROM users WHERE users.email = ?", [request.body.email], function(validate_error, validate_results){
 
-    });
-    sqlserver.query("SELECT * FROM users WHERE users.email = ? AND users.password = ?", [request.body.email, request.body.password], function(error, results){
+        if(validate_error){
 
-        if(results.length > 0){
+            throw validate_error;
+        }
 
-            request.session.loggedin = true;
-            request.session.userid = results[0].userid;
-            request.session.usertheme = 0;
-            response.redirect('/home');
+        if(validate_results.length != 0){
+
+            var signup = fs.readFileSync('signup.html').toString();
+            signup = signup.replace(/ERRORMESSAGE/gi, "The email address you entered has already been used with an account!")
+            response.send(signup);
+            response.end();
 
         }else{
 
-            response.send("Signup failed!");
+            sqlserver.query("INSERT INTO users (email, username, password, bio) VALUES (?, ?, ?, ?)", [request.body.email, request.body.username, request.body.password, "This is a new user."], function(error, result){
+
+                if(error){
+
+                    throw error;
+                }
+
+                sqlserver.query("SELECT * FROM users WHERE users.email = ? AND users.password = ?", [request.body.email, request.body.password], function(inner_error, inner_results){
+
+                    if(inner_error){
+
+                        throw inner_error;
+                    }
+
+                    if(inner_results.length > 0){
+
+                        request.session.loggedin = true;
+                        request.session.userid = inner_results[0].userid;
+                        request.session.usertheme = 0;
+                        response.redirect('/home');
+
+                    }else{
+
+                        var signup = fs.readFileSync('signup.html').toString();
+                        signup = signup.replace(/ERRORMESSAGE/gi, "Signup failed!");
+                        response.send(signup);
+                        response.end();
+                    }
+                });
+            });
         }
     });
 });
@@ -284,9 +321,11 @@ app.post('/auth', function(request, response){
 
         }else{
 
-            response.send("Login incorrect!");
+            var login = fs.readFileSync('login.html').toString();
+            login = login.replace(/ERRORMESSAGE/gi, "Login incorrect!");
+            response.send(login);
+            response.end();
         }
-        response.end();
     });
 });
 
