@@ -422,6 +422,10 @@ body{
     padding-right: 15px;
     margin: 0;
 }
+.page-author.clickable{
+
+    cursor: pointer;
+}
 .page-info{
 
     margin: 0;
@@ -542,6 +546,50 @@ body{
     float: left;
     left: 15px;
     color: var(--fg-color);
+}
+#user-edit{
+
+    font-family: Merriweather Sans, sans-serif;
+    font-weight: 300;
+    font-size: 20px;
+    line-height: 26px;
+    padding: 3px 6px;
+    margin-left: 3px;
+    margin-bottom: 3px;
+    color: var(--fg-color);
+    border: 2px solid var(--fg-color);
+    border-radius: 12px;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    display: initial;
+}
+.disabled{
+
+    display: none;
+}
+.edit-form{
+
+    font-family: Merriweather Sans, sans-serif;
+    font-weight: 300;
+    font-size: 15px;
+    padding: 15px;
+    resize: none;
+    margin-left: 15px;
+    margin-right: auto;
+    border: 1px solid var(--fg-color);
+    color: var(--fg-color);
+    background-color: var(--bg-color);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+#username-edit{
+
+    margin-top: 72px;
+}
+#bio-edit{
+
+    width: calc(100% - 30px);
 }
 @media screen and (min-width: 768px){
 

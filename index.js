@@ -40,7 +40,7 @@ app.use(bodyparser.json());
 
 function get_post_query(where_conditions){
 
-    var post_query = `SELECT posts.postid, title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, username, num_likes, has_liked, has_followed
+    var post_query = `SELECT posts.postid, title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, users.userid, username, num_likes, has_liked, has_followed
                              FROM posts, users, (SELECT like_data.postid, like_data.num_likes, like_data.has_liked, follow_data.has_followed
                                                  FROM (SELECT num_likes_data.postid, num_likes_data.num_likes, has_liked_data.has_liked
                                                        FROM (SELECT posts.postid, COUNT(likes.userid) AS num_likes
@@ -77,6 +77,7 @@ function build_post_string(sql_results, set_first_post=true){
         }
         var new_post = post_template.toString().replace(/IS_FIRST/gi, first_string);
         new_post = new_post.toString().replace(/PAGEPOSTID/gi, sql_results[i].postid);
+        new_post = new_post.toString().replace(/PAGEUSERID/gi, sql_results[i].userid);
         new_post = new_post.toString().replace(/POSTTITLE/gi, sql_results[i].title);
         new_post = new_post.toString().replace(/POSTAUTHOR/gi, sql_results[i].username);
         new_post = new_post.toString().replace(/POSTCONTENT/gi, sql_results[i].content);
@@ -163,6 +164,7 @@ function build_page_string(sql_results, comment_results, user_logged_in){
         page_string = page_string.replace(/POSTLIKES/gi, sql_results[0].num_likes); 
         page_string = page_string.replace(/POSTINFO/gi, sql_results[0].date); 
         page_string = page_string.replace(/PAGEPOSTID/gi, sql_results[0].postid); 
+        page_string = page_string.replace(/PAGEUSERID/gi, sql_results[0].userid); 
 
         var comment_string = "";
         var comment_template = fs.readFileSync('comment_template.html');
@@ -451,12 +453,10 @@ app.get('/profile', function(request, response){
     if(!request.session.loggedin){
 
         response.redirect('/');
-        response.end();
 
     }else{
 
-        var content = "";
-        send_home(request, response, "Profile", content, 3);
+        response.redirect('/user?userid=' + request.session.userid);
     }
 });
 app.get('/write', function(request, response){
@@ -549,6 +549,25 @@ app.post('/comment', function(request, response){
         });
     }
 });
+app.post('/edituser', function(request, response){
+
+    if(!request.session.loggedin || (request.session.loggedin && request.session.userid != request.body.userid)){
+
+        response.redirect('/user?userid=' + request.body.userid);
+
+    }else{
+
+        sqlserver.query("UPDATE users SET username = ?, bio = ? WHERE userid = ?", [request.body.username, request.body.bio, request.body.userid], function(error, results){
+
+            if(error){
+
+                throw error;
+            }
+
+            response.redirect('/user?userid=' + request.body.userid);
+        });
+    }
+});
 app.get('/user', function(request, response){
 
     var userid = -1;
@@ -579,10 +598,24 @@ app.get('/user', function(request, response){
 
                 var post_string = build_post_string(inner_results);
                 var content_string = fs.readFileSync('user_template.html').toString();
+                content_string = content_string.replace(/PAGEUSERID/gi, request.query.userid);
                 content_string = content_string.replace(/PAGEUSER/gi, results[0].username);
                 content_string = content_string.replace(/PAGEBIO/gi, results[0].bio);
                 content_string = content_string.replace(/PAGEPOSTS/gi, post_string);
-                send_home(request, response, "Home", content_string, -1, true);
+                if(request.query.userid == userid){
+
+                    content_string = content_string.replace(/ENABLEEDIT/gi, "");
+
+                }else{
+
+                    content_string = content_string.replace(/ENABLEEDIT/gi, " disabled");
+                }
+                var current_page = -1;
+                if(request.query.userid == request.session.userid){
+
+                    current_page = 3;
+                }
+                send_home(request, response, "Home", content_string, current_page, true);
             });
         }
     });

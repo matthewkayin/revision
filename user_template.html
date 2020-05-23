@@ -1,5 +1,8 @@
 <div class="page">
-    <h1 class="page-title">PAGEUSER</h1>
-    <h1 class="page-author">PAGEBIO</h1>
+    <p id="userid" class="disabled">PAGEUSERID</p>
+    <h1 id="user-username" class="page-title">PAGEUSER <span id="user-edit" id="ENABLEEDIT" onclick="begin_user_edit()">Edit</span></h1>
+    <textarea class="edit-form disabled" id="username-edit" rows="1" onkeypress="handle_user_edit_key(event)"></textarea>
+    <h2 id="user-bio" class="page-author" id="page-bio">PAGEBIO</h2>
+    <textarea class="edit-form disabled" id="bio-edit" rows="3" onkeypress="handle_user_edit_key(event)"></textarea>
     PAGEPOSTS
 </div>

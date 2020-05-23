@@ -276,3 +276,41 @@ function format_editor_text(){
     var textarea = document.getElementById("draft-textarea");
     textarea.value = textarea.value.toString().replace(/\n/g, '<br/>');
 }
+
+function begin_user_edit(){
+
+    var current_username = document.getElementById("user-username").innerHTML;
+    document.getElementById("username-edit").value = current_username.substring(0, current_username.indexOf("<span"));
+    document.getElementById("bio-edit").value = document.getElementById("user-bio").innerHTML;
+
+    document.getElementById("username-edit").classList.remove("disabled");
+    document.getElementById("bio-edit").classList.remove("disabled");
+    document.getElementById("user-username").classList.add("disabled");
+    document.getElementById("user-bio").classList.add("disabled");
+}
+
+function handle_user_edit_key(e){
+
+    if(e.which == 13){
+
+        var current_username_suffix = document.getElementById("user-username").innerHTML;
+        current_username_suffix = current_username_suffix.substring(current_username_suffix.indexOf("<span"));
+        document.getElementById("user-username").innerHTML = document.getElementById("username-edit").value + " " + current_username_suffix;
+        document.getElementById("user-bio").innerHTML = document.getElementById("bio-edit").value;
+
+        document.getElementById("username-edit").classList.add("disabled");
+        document.getElementById("bio-edit").classList.add("disabled");
+        document.getElementById("user-username").classList.remove("disabled");
+        document.getElementById("user-bio").classList.remove("disabled");
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/edituser", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(JSON.stringify({
+
+            userid: Number(document.getElementById("userid").innerHTML),
+            username: document.getElementById("username-edit").value,
+            bio: document.getElementById("bio-edit").value
+        }));
+    }
+}
