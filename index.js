@@ -527,7 +527,7 @@ app.get('/home', function(request, response){
 
     }else{
 
-        var content = (fs.readFileSync('new_button.html')).toString();
+        var content = fs.readFileSync('new_button.html').toString();
         sqlserver.query(get_post_query('users.userid = ?', request.session.userid, true), [request.session.userid], function(error, results){
 
             if(error){
@@ -535,7 +535,8 @@ app.get('/home', function(request, response){
                 throw error;
             }
             content += build_post_string(results, request.session.userid, false);
-            send_home(request, response, "Home", content, 0); });
+            send_home(request, response, "Home", content, 0); 
+        });
     }
 });
 app.get('/read', function(request, response){
@@ -547,8 +548,16 @@ app.get('/read', function(request, response){
 
     }else{
 
-        var content = "";
-        send_home(request, response, "Read", content, 1);
+        sqlserver.query(get_post_query('users.userid <> ? AND has_followed = 1', request.session.userid, false), [request.session.userid], function(error, results){
+
+            if(error){
+
+                throw error;
+            }
+
+            var content = build_post_string(results, request.session.userid, true);
+            send_home(request, response, "Read", content, 1);
+        });
     }
 });
 app.get('/discover', function(request, response){
@@ -560,13 +569,23 @@ app.get('/discover', function(request, response){
 
     }else{
 
-        sqlserver.query("SELECT title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, username FROM posts, users WHERE users.userid != ? AND users.userid = posts.userid", [request.session.userid], function(error, results){
+        var search_text = '';
+        var search_query = '';
+        if(request.query.searchtext){
+
+            search_text = request.query.searchtext;
+            search_query = ' AND title LIKE \'' + request.query.searchtext + '%\'';
+        }
+        sqlserver.query(get_post_query('users.userid <> ?' + search_query, request.session.userid, false), [request.session.userid], function(error, results){
 
             if(error){
 
                 throw error;
             }
-            var content = build_post_string(results);
+
+            var content = fs.readFileSync('discover_searchbar.html').toString();
+            content = content.replace(/DISCOVERSEARCHVALUE/gi, search_text);
+            content += build_post_string(results, request.session.userid, true);
             send_home(request, response, "Discover", content, 2);
         });
     }

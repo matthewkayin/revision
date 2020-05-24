@@ -327,3 +327,11 @@ function handle_user_edit_key(e){
         }));
     }
 }
+
+function search_if_enter_pressed(textbox, e){
+
+    if(e.which == 13){
+
+        location.href = '/discover?searchtext=' + textbox.value;
+    }
+}
