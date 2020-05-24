@@ -1,9 +1,9 @@
 var mysql = require('mysql');
 var express = require('express');
 var session = require('express-session');
-//var redis = require('redis');
-//var redisclient = redis.createClient();
-//var redisstore = require('connect-redis')(session);
+var redis = require('redis');
+var redisclient = redis.createClient();
+var redisstore = require('connect-redis')(session);
 var bodyparser = require('body-parser');
 var path = require('path');
 var fs = require('fs');
@@ -31,9 +31,9 @@ app.use(session({
 
     secret: 'revision-secret',
     //cookie: {secure: false},
-    //store: new redisstore({host: 'localhost', port: 6379, client: redisclient, ttl: 86400}),
-    resave: true,
-    saveUninitialized: true
+    store: new redisstore({host: 'localhost', port: 6379, client: redisclient, ttl: 86400}),
+    resave: false,
+    saveUninitialized: false
 }));
 app.use(bodyparser.urlencoded({extended: true}));
 app.use(bodyparser.json());
