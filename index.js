@@ -38,29 +38,38 @@ app.use(session({
 app.use(bodyparser.urlencoded({extended: true}));
 app.use(bodyparser.json());
 
-function get_post_query(where_conditions){
+function get_post_query(where_conditions, userid, allow_drafts){
 
-    var post_query = `SELECT posts.postid, title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, parent_postid, revision, users.userid, username, num_likes, has_liked, has_followed
-                             FROM posts, users, (SELECT like_data.postid, like_data.num_likes, like_data.has_liked, follow_data.has_followed
-                                                 FROM (SELECT num_likes_data.postid, num_likes_data.num_likes, has_liked_data.has_liked
-                                                       FROM (SELECT posts.postid, COUNT(likes.userid) AS num_likes
-                                                             FROM posts
-                                                             LEFT JOIN likes
-                                                             ON posts.postid = likes.postid
-                                                             GROUP BY posts.postid) num_likes_data
-                                                       INNER JOIN (SELECT posts.postid, COUNT(userlikes.userid) AS has_liked
-                                                                   FROM posts
-                                                                   LEFT JOIN (SELECT * FROM likes WHERE likes.userid = ?) userlikes
-                                                                   ON posts.postid = userlikes.postid
-                                                                   GROUP BY posts.postid) has_liked_data
-                                                       ON num_likes_data.postid = has_liked_data.postid) like_data
-                                                 INNER JOIN (SELECT posts.postid, COUNT(userfollows.userid) AS has_followed
-                                                             FROM posts
-                                                             LEFT JOIN (SELECT * FROM follows WHERE follows.userid = ?) userfollows
-                                                             ON posts.postid = userfollows.postid
-                                                             GROUP BY posts.postid) follow_data
-                                                 ON like_data.postid = follow_data.postid) interaction_data
-                             WHERE posts.userid = users.userid AND posts.postid = interaction_data.postid AND ` + where_conditions;
+    var revision_table = 'revisions';
+    if(!allow_drafts){
+
+        revision_table = '(SELECT * FROM revisions WHERE published = 1) published_revisions';
+    }
+    var post_query = `SELECT posts.postid, title, users.userid, username, published, published_date, date, content, revision_num, num_likes, has_liked, has_followed
+                      FROM posts, users, (SELECT like_data.postid, like_data.num_likes, like_data.has_liked, follow_data.has_followed
+                                          FROM (SELECT num_likes_data.postid, num_likes_data.num_likes, has_liked_data.has_liked
+                                                FROM (SELECT posts.postid, COUNT(likes.userid) AS num_likes
+                                                      FROM posts
+                                                      LEFT JOIN likes
+                                                      ON posts.postid = likes.postid
+                                                      GROUP BY posts.postid) num_likes_data
+                                                INNER JOIN (SELECT posts.postid, COUNT(userlikes.userid) AS has_liked
+                                                            FROM posts
+                                                            LEFT JOIN (SELECT * FROM likes WHERE likes.userid = ` + String(userid) + `) userlikes
+                                                            ON posts.postid = userlikes.postid
+                                                            GROUP BY posts.postid) has_liked_data
+                                                ON num_likes_data.postid = has_liked_data.postid) like_data
+                                          INNER JOIN (SELECT posts.postid, COUNT(userfollows.userid) AS has_followed
+                                                      FROM posts
+                                                      LEFT JOIN (SELECT * FROM follows WHERE follows.userid = ` + String(userid) + `) userfollows
+                                                      ON posts.postid = userfollows.postid
+                                                      GROUP BY posts.postid) follow_data
+                                          ON like_data.postid = follow_data.postid) interaction_data,
+                                          (SELECT revisionid, revisions.postid, published, published_date, DATE_FORMAT(published_date, '%M %d, %Y') AS date, content, revision_num
+                                           FROM revisions
+                                           INNER JOIN (SELECT postid, MAX(published_date) AS max_date FROM ` + revision_table + ` GROUP BY postid) latest_dates
+                                           ON revisions.published_date = latest_dates.max_date) revision_date
+                      WHERE posts.userid = users.userid AND posts.postid = interaction_data.postid AND posts.postid = revision_date.postid AND ` + where_conditions + ` ORDER BY published_date DESC`;
     return post_query;
 }
 
@@ -114,7 +123,7 @@ function build_post_string(sql_results, session_userid, set_first_post=true){
             continue;
         }
 
-        var info_string = get_revision_string(sql_results[i].revision, !sql_results[i].published) + " " + sql_results[i].date + ".";
+        var info_string = get_revision_string(sql_results[i].revision_num, !sql_results[i].published) + " " + sql_results[i].date + ".";
 
         var first_string = "";
         if(set_first_post && i == 0){
@@ -166,7 +175,6 @@ function build_post_string(sql_results, session_userid, set_first_post=true){
     return post_string;
 }
 
-// TODO add user logged in to set the like button
 function build_page_string(sql_results, comment_results, session_userid){
 
     var page_template = fs.readFileSync('page_template.html');
@@ -214,7 +222,7 @@ function build_page_string(sql_results, comment_results, session_userid){
             }
         }
 
-        var info_string = get_revision_string(sql_results[0].revision, !sql_results[0].published) + " " + sql_results[0].date + ".";
+        var info_string = get_revision_string(sql_results[0].revision_num, !sql_results[0].published) + " " + sql_results[0].date + ".";
         page_string = page_string.replace(/POSTINFO/gi, info_string); 
 
         page_string = page_string.replace(/POSTLIKES/gi, sql_results[0].num_likes); 
@@ -520,7 +528,7 @@ app.get('/home', function(request, response){
     }else{
 
         var content = (fs.readFileSync('new_button.html')).toString();
-        sqlserver.query(get_post_query('users.userid = ?'), [request.session.userid, request.session.userid, request.session.userid], function(error, results){
+        sqlserver.query(get_post_query('users.userid = ?', request.session.userid, true), [request.session.userid], function(error, results){
 
             if(error){
 
@@ -598,7 +606,7 @@ app.get('/revise', function(request, response){
 
     }else{
 
-        sqlserver.query("SELECT parent_postid, title, content FROM posts WHERE postid = ?", [request.query.postid], function(error, results){
+        sqlserver.query("SELECT posts.postid, title, content FROM posts, revisions WHERE posts.postid = ? AND revisions.revisionid = ?", [request.query.postid, request.query.revisionid], function(error, results){
 
             if(error){
 
@@ -611,7 +619,7 @@ app.get('/revise', function(request, response){
 
                 parent_postid = request.query.postid;
             }
-            content = content.replace(/PAGEPARENTPOSTID/gi, String(parent_postid));
+            content = content.replace(/PAGEPARENTPOSTID/gi, String(request.query.postid));
             content = content.replace(/PAGEDEFAULTTITLE/gi, results[0].title);
             content = content.replace(/DISABLETITLE/gi, "readonly='readonly' ");
             content = content.replace(/PAGEDEFAULTVALUE/gi, results[0].content);
@@ -627,28 +635,54 @@ function save_post(request, response, publish){
 
     }else{
 
-        sqlserver.query("SELECT MAX(revision) AS highest_revision FROM posts WHERE (parent_postid = ? OR (parent_postid = -1 AND postid = ?)) AND published = ?", [request.body.parent_postid, request.body.parent_postid, publish], function(error, results){
+        if(request.body.parent_postid == -1){
 
-            if(error){
+            sqlserver.query("INSERT INTO posts (userid, title) VALUES (?, ?)", [request.session.userid, request.body.title], function(error, result){
 
-                throw error;
-            }
+                if(error){
 
-            var revision_number = 1;
-            if(results.length != 0 && request.body.parent_postid != -1){
-
-                revision_number = results[0].highest_revision + 1;
-            }
-            sqlserver.query("INSERT INTO posts (userid, published, published_date, title, content, parent_postid, revision) VALUES (?, ?, ?, ?, ?, ?, ?)", [request.session.userid, publish, new Date(), request.body.title, request.body.content, request.body.parent_postid, revision_number], function(inner_error, inner_results){
-
-                if(inner_error){
-
-                    throw inner_error;
+                    throw error;
                 }
-                response.redirect('/home');
-                response.end();
+
+                sqlserver.query("INSERT INTO revisions (postid, published, published_date, content, revision_num) VALUES (?, ?, ?, ?, ?)", [result.insertId, publish, new Date(), request.body.content, 1], function(inner_error, inner_results){
+
+                    if(inner_error){
+
+                        throw inner_error;
+                    }
+
+                    response.redirect('/home');
+                    response.end();
+                });
             });
-        });
+
+        }else{
+
+            sqlserver.query("SELECT MAX(revision_num) AS highest_revision FROM revisions WHERE postid = ? AND published = ?", [request.body.parent_postid, publish], function(error, results){
+
+                if(error){
+
+                    throw error;
+                }
+
+                var revision_num = 1;
+                if(results.length != 0){
+
+                    revision_num = results[0].highest_revision + 1;
+                }
+
+                sqlserver.query("INSERT INTO revisions (postid, published, published_date, content, revision_num) VALUES (?, ?, ?, ?, ?)", [request.body.parent_postid, publish, new Date(), request.body.content, revision_num], function(inner_error, inner_results){
+
+                    if(inner_error){
+
+                        throw inner_error;
+                    }
+
+                    response.redirect('/home');
+                    response.end();
+                });
+            });
+        }
     }
 }
 app.post('/save', function(request, response){
@@ -666,7 +700,7 @@ app.get('/post', function(request, response){
 
         userid = request.session.userid;
     }
-    sqlserver.query(get_post_query('posts.postid = ?'), [userid, userid, request.query.postid], function(error, results){
+    sqlserver.query(get_post_query('posts.postid = ?', userid, true), [request.query.postid], function(error, results){
 
         if(error){
 
@@ -688,7 +722,7 @@ app.get('/revisions', function(request, response){
 
     }else{
 
-        sqlserver.query("SELECT parent_postid FROM posts WHERE postid = ?", [request.query.postid], function(error, results){
+        sqlserver.query("SELECT title, revisionid, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, revision_num FROM posts, revisions WHERE posts.postid = ? AND posts.postid = revisions.postid", [request.query.postid], function(error, results){
 
             if(error){
 
@@ -702,41 +736,24 @@ app.get('/revisions', function(request, response){
 
             }else{
 
-                sqlserver.query(get_post_query("(parent_postid = ? OR (parent_postid = -1 AND posts.postid = ?))"), [request.session.userid, request.session.userid, results[0].parent_postid, results[0].parent_postid], function(inner_error, inner_results){
+                var post_string = "";
+                var post_template = fs.readFileSync('revisions_info.html');
+                for(var i = 0; i < results.length; i++){
 
-                    if(inner_error){
+                    var new_post = post_template.toString();
+                    new_post = new_post.replace(/REVISEPOSTID/gi, String(request.query.postid));
+                    new_post = new_post.replace(/POSTREVISIONID/gi, String(results[i].revisionid));
+                    var info_string = get_revision_string(results[i].revision_num, !results[i].published) + " " + results[i].date + ".";
+                    new_post = new_post.replace(/POSTINFO/gi, info_string);
 
-                        throw inner_error;
-                    }
+                    post_string += new_post;
+                }
 
-                    var post_string = "";
-                    var post_template = fs.readFileSync('revisions_info.html');
-                    for(var i = 0; i < inner_results.length; i++){
+                var content = fs.readFileSync('revisions_template.html').toString();
+                content = content.replace(/POSTTITLE/gi, results[0].title);
+                content = content.replace(/PAGEPOSTS/gi, post_string);
 
-                        var new_post = post_template.toString();
-                        new_post = new_post.replace(/LIKEBUTTONID/gi, "like-button-" + String(inner_results[i].postid));
-                        new_post = new_post.replace(/REVISEPOSTID/gi, String(inner_results[i].postid));
-                        if(inner_results[i].has_liked){
-
-                            new_post = new_post.replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe800));
-
-                        }else{
-
-                            new_post = new_post.replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe801));
-                        }
-                        new_post = new_post.replace(/LIKES/gi, String(inner_results[i].num_likes));
-                        var info_string = get_revision_string(inner_results[i].revision, !inner_results[i].published) + " " + inner_results[i].date + ".";
-                        new_post = new_post.replace(/POSTINFO/gi, info_string);
-
-                        post_string += new_post;
-                    }
-
-                    var content = fs.readFileSync('revisions_template.html').toString();
-                    content = content.replace(/POSTTITLE/gi, inner_results[0].title);
-                    content = content.replace(/PAGEPOSTS/gi, post_string);
-
-                    send_home(request, response, "Revisions", content, -1);
-                });
+                send_home(request, response, "Revisions", content, -1);
             }
         });
     }
@@ -800,7 +817,7 @@ app.get('/user', function(request, response){
 
         }else{
 
-            sqlserver.query(get_post_query('users.userid = ?'), [userid, userid, request.query.userid], function(inner_error, inner_results){
+            sqlserver.query(get_post_query('users.userid = ?', userid, false), [request.query.userid], function(inner_error, inner_results){
 
                 if(inner_error){
 

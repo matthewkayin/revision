@@ -16,14 +16,21 @@ CREATE TABLE posts(
 
     postid INT NOT NULL AUTO_INCREMENT,
     userid INT NOT NULL,
-    published BOOLEAN NOT NULL,
-    published_date DATETIME,
     title VARCHAR(255) NOT NULL,
-    content MEDIUMTEXT NOT NULL,
-    parent_postid INT NOT NULL,
-    revision INT NOT NULL,
     PRIMARY KEY(postid),
     FOREIGN KEY(userid) REFERENCES users(userid)
+);
+
+CREATE TABLE revisions(
+
+    revisionid INT NOT NULL AUTO_INCREMENT,
+    postid INT NOT NULL,
+    published BOOLEAN NOT NULL,
+    published_date DATETIME,
+    content MEDIUMTEXT NOT NULL,
+    revision_num INT NOT NULL,
+    PRIMARY KEY(revisionid),
+    FOREIGN KEY(postid) REFERENCES posts(postid)
 );
 
 CREATE TABLE likes(
