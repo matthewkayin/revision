@@ -20,6 +20,8 @@ CREATE TABLE posts(
     published_date DATETIME,
     title VARCHAR(255) NOT NULL,
     content MEDIUMTEXT NOT NULL,
+    parent_postid INT NOT NULL,
+    revision INT NOT NULL,
     PRIMARY KEY(postid),
     FOREIGN KEY(userid) REFERENCES users(userid)
 );

@@ -1,7 +1,8 @@
 <div class="post first">
     <form class="draft-form" method="POST" onsubmit="format_editor_text()">
-        <input type="text" name="title" placeholder="Title">
-        <textarea id="draft-textarea" value="" name="content" placeholder="Once upon a midnight dreary..." rows="8" oninput="resize_textarea(this);"></textarea>
+        <input DISABLETITLE type="text" name="title" placeholder="Title" value="PAGEDEFAULTTITLE">
+        <textarea id="draft-textarea" value="" name="content" placeholder="Once upon a midnight dreary..." rows="8" oninput="resize_textarea(this);">PAGEDEFAULTVALUE</textarea>
+        <input type="hidden" name="parent_postid" value="PAGEPARENTPOSTID">
         <input type="submit" formaction="publish" value="Publish">
         <input type="submit" formaction="save" class="light" value="Save Draft">
     </form>

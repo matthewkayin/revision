@@ -40,7 +40,7 @@ app.use(bodyparser.json());
 
 function get_post_query(where_conditions){
 
-    var post_query = `SELECT posts.postid, title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, users.userid, username, num_likes, has_liked, has_followed
+    var post_query = `SELECT posts.postid, title, content, published, DATE_FORMAT(published_date, '%M %d, %Y') AS date, parent_postid, revision, users.userid, username, num_likes, has_liked, has_followed
                              FROM posts, users, (SELECT like_data.postid, like_data.num_likes, like_data.has_liked, follow_data.has_followed
                                                  FROM (SELECT num_likes_data.postid, num_likes_data.num_likes, has_liked_data.has_liked
                                                        FROM (SELECT posts.postid, COUNT(likes.userid) AS num_likes
@@ -64,24 +64,57 @@ function get_post_query(where_conditions){
     return post_query;
 }
 
+var written_numbers = ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Nineth", "Tenth", "Eleventh", "Twelveth", "Thirteenth", "Fourteenth", "Fifteenth", "Sixteenth", "Seventeenth", "Eighteenth", "Nineteenth"];
+function get_revision_string(revision, is_draft){
+    
+    var label = " Revision.";
+    if(is_draft){
+
+        label = " Draft.";
+    }
+
+    if(revision < 20){
+
+        return written_numbers[revision - 1] + label;
+
+    }else{
+
+        var small_num = revision % 10;
+        if(small_num == 1){
+
+            // 21st, 31st, 41st...
+            return String(revision) + "st" + label;
+
+        }else if(small_num == 2){
+
+            // 22nd, 32nd, 42nd...
+            return String(revision) + "nd" + label;
+
+        }else if(small_num == 3){
+
+            // 23rd, 33rd, 43rd...
+            return String(revision) + "rd" + label;
+
+        }else{
+
+            // 20th, 25th, 36th...
+            return String(revision) + "th" + label;
+        }
+    }
+}
+
 function build_post_string(sql_results, session_userid, set_first_post=true){
 
     var post_template = fs.readFileSync('post_template.html');
     var post_string = "";
     for(var i = 0; i < sql_results.length; i++){
 
-        if(!sql_results[i].published){
+        if(!sql_results[i].published && sql_results[i].userid != session_userid){
 
-            if(sql_results[i].userid != session_userid){
-
-                continue;
-            }
-            info_string += " Not published.";
-            
-        }else{
-
-            info_string += " " + sql_results[i].date + ".";
+            continue;
         }
+
+        var info_string = get_revision_string(sql_results[i].revision, !sql_results[i].published) + " " + sql_results[i].date + ".";
 
         var first_string = "";
         if(set_first_post && i == 0){
@@ -89,13 +122,13 @@ function build_post_string(sql_results, session_userid, set_first_post=true){
             first_string = " first";
         }
 
-        var new_post = post_template.toString().replace(/IS_FIRST/gi, first_string);
+        var new_post = post_template.toString().replace(/POSTINFO/gi, info_string);
+        new_post = new_post.toString().replace(/IS_FIRST/gi, first_string);
         new_post = new_post.toString().replace(/PAGEPOSTID/gi, sql_results[i].postid);
         new_post = new_post.toString().replace(/PAGEUSERID/gi, sql_results[i].userid);
         new_post = new_post.toString().replace(/POSTTITLE/gi, sql_results[i].title);
         new_post = new_post.toString().replace(/POSTAUTHOR/gi, sql_results[i].username);
         new_post = new_post.toString().replace(/POSTCONTENT/gi, sql_results[i].content);
-        var info_string = "First revision.";
 
         new_post = new_post.toString().replace(/LIKEBUTTONID/gi, "like-button-" + String(sql_results[i].postid));
         if(sql_results[i].has_liked){
@@ -126,7 +159,6 @@ function build_post_string(sql_results, session_userid, set_first_post=true){
             }
         }
 
-        new_post = new_post.toString().replace(/POSTINFO/gi, info_string);
         new_post = new_post.toString().replace(/LIKES/gi, String(sql_results[i].num_likes));
         post_string += new_post;
     }
@@ -182,8 +214,10 @@ function build_page_string(sql_results, comment_results, session_userid){
             }
         }
 
+        var info_string = get_revision_string(sql_results[0].revision, !sql_results[0].published) + " " + sql_results[0].date + ".";
+        page_string = page_string.replace(/POSTINFO/gi, info_string); 
+
         page_string = page_string.replace(/POSTLIKES/gi, sql_results[0].num_likes); 
-        page_string = page_string.replace(/POSTINFO/gi, sql_results[0].date); 
         page_string = page_string.replace(/PAGEPOSTID/gi, sql_results[0].postid); 
         page_string = page_string.replace(/PAGEUSERID/gi, sql_results[0].userid); 
 
@@ -548,11 +582,15 @@ app.get('/write', function(request, response){
 
     }else{
 
-        var content = fs.readFileSync('post_editor.html');
+        var content = fs.readFileSync('post_editor.html').toString();
+        content = content.replace(/PAGEPARENTPOSTID/gi, "-1");
+        content = content.replace(/PAGEDEFAULTTITLE/gi, "");
+        content = content.replace(/DISABLETITLE/gi, "");
+        content = content.replace(/PAGEDEFAULTVALUE/gi, "");
         send_home(request, response, "Write", content, 0);
     }
 });
-app.post('/save', function(request, response){
+app.get('/revise', function(request, response){
 
     if(!request.session.loggedin){
 
@@ -560,18 +598,28 @@ app.post('/save', function(request, response){
 
     }else{
 
-        sqlserver.query("INSERT INTO posts (userid, published, published_date, title, content) VALUES (?, ?, ?, ?, ?)", [request.session.userid, 0, new Date(), request.body.title, request.body.content], function(error, results){
+        sqlserver.query("SELECT parent_postid, title, content FROM posts WHERE postid = ?", [request.query.postid], function(error, results){
 
             if(error){
 
                 throw error;
             }
-            response.redirecet('/home');
-            response.end();
+
+            var content = fs.readFileSync('post_editor.html').toString();
+            var parent_postid = results[0].parent_postid;
+            if(parent_postid == -1){
+
+                parent_postid = request.query.postid;
+            }
+            content = content.replace(/PAGEPARENTPOSTID/gi, String(parent_postid));
+            content = content.replace(/PAGEDEFAULTTITLE/gi, results[0].title);
+            content = content.replace(/DISABLETITLE/gi, "readonly='readonly' ");
+            content = content.replace(/PAGEDEFAULTVALUE/gi, results[0].content);
+            send_home(request, response, "Write", content, 0);
         });
     }
 });
-app.post('/publish', function(request, response){
+function save_post(request, response, publish){
 
     if(!request.session.loggedin){
 
@@ -579,16 +627,37 @@ app.post('/publish', function(request, response){
 
     }else{
 
-        sqlserver.query("INSERT INTO posts (userid, published, published_date, title, content) VALUES (?, ?, ?, ?, ?)", [request.session.userid, 1, new Date(), request.body.title, request.body.content], function(error, results){
+        sqlserver.query("SELECT MAX(revision) AS highest_revision FROM posts WHERE (parent_postid = ? OR (parent_postid = -1 AND postid = ?)) AND published = ?", [request.body.parent_postid, request.body.parent_postid, publish], function(error, results){
 
             if(error){
 
                 throw error;
             }
-            response.redirect('/home');
-            response.end();
+
+            var revision_number = 1;
+            if(results.length != 0 && request.body.parent_postid != -1){
+
+                revision_number = results[0].highest_revision + 1;
+            }
+            sqlserver.query("INSERT INTO posts (userid, published, published_date, title, content, parent_postid, revision) VALUES (?, ?, ?, ?, ?, ?, ?)", [request.session.userid, publish, new Date(), request.body.title, request.body.content, request.body.parent_postid, revision_number], function(inner_error, inner_results){
+
+                if(inner_error){
+
+                    throw inner_error;
+                }
+                response.redirect('/home');
+                response.end();
+            });
         });
     }
+}
+app.post('/save', function(request, response){
+
+    save_post(request, response, 0);
+});
+app.post('/publish', function(request, response){
+
+    save_post(request, response, 1);
 });
 app.get('/post', function(request, response){
 
@@ -610,6 +679,67 @@ app.get('/post', function(request, response){
             send_home(request, response, "Home", page_string, -1, true);
         });
     });
+});
+app.get('/revisions', function(request, response){
+
+    if(!request.session.loggedin){
+
+        response.redirect('/');
+
+    }else{
+
+        sqlserver.query("SELECT parent_postid FROM posts WHERE postid = ?", [request.query.postid], function(error, results){
+
+            if(error){
+
+                throw error;
+            }
+
+            if(results.length == 0){
+
+                response.redirect('/');
+                response.end();
+
+            }else{
+
+                sqlserver.query(get_post_query("(parent_postid = ? OR (parent_postid = -1 AND posts.postid = ?))"), [request.session.userid, request.session.userid, results[0].parent_postid, results[0].parent_postid], function(inner_error, inner_results){
+
+                    if(inner_error){
+
+                        throw inner_error;
+                    }
+
+                    var post_string = "";
+                    var post_template = fs.readFileSync('revisions_info.html');
+                    for(var i = 0; i < inner_results.length; i++){
+
+                        var new_post = post_template.toString();
+                        new_post = new_post.replace(/LIKEBUTTONID/gi, "like-button-" + String(inner_results[i].postid));
+                        new_post = new_post.replace(/REVISEPOSTID/gi, String(inner_results[i].postid));
+                        if(inner_results[i].has_liked){
+
+                            new_post = new_post.replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe800));
+
+                        }else{
+
+                            new_post = new_post.replace(/HEARTSYMBOL/gi, String.fromCharCode(0xe801));
+                        }
+                        new_post = new_post.replace(/LIKES/gi, String(inner_results[i].num_likes));
+                        var info_string = get_revision_string(inner_results[i].revision, !inner_results[i].published) + " " + inner_results[i].date + ".";
+                        new_post = new_post.replace(/POSTINFO/gi, info_string);
+
+                        post_string += new_post;
+                    }
+
+                    var content = fs.readFileSync('revisions_template.html').toString();
+                    content = content.replace(/POSTTITLE/gi, inner_results[0].title);
+                    content = content.replace(/PAGEPOSTS/gi, post_string);
+
+                    send_home(request, response, "Revisions", content, -1);
+                });
+            }
+        });
+    }
 });
 app.post('/comment', function(request, response){
 

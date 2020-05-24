@@ -215,11 +215,24 @@ function toggle_like(heart){
     }));
 }
 
-function toggle_follow(button){
+function handle_follow_or_revise_button(button){
 
     // format: follow-button-#
     // number starts at index 14
     var post_id = Number(button.id.substring(14));
+
+    if(button.innerHTML == "Revise"){
+
+        location.href = '/revisions?postid=' + String(post_id);
+
+    }else{
+
+        toggle_follow(button, post_id);
+    }
+}
+
+function toggle_follow(button, post_id){
+
     var currently_followed = button.innerHTML == "Unfollow";
 
     if(currently_followed){
